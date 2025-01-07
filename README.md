@@ -12,7 +12,7 @@
 # How to use
 - [Create a Notion integration](https://www.notion.so/profile/integrations)
 - Apply this integration to your meeting room database. 
-  - [You can find an example here](https://stadtlandnetz.notion.site/174c0d1885418019bb84ea382e01bb73?v=174c0d18854181928e6f000cdcd457fd)
+  - [Use this database template](https://stadtlandnetz.notion.site/174c0d1885418019bb84ea382e01bb73?v=174c0d18854181928e6f000cdcd457fd)
   - Click the duplicate icon in the top right corner in order to copy the template into your Notion instance.
 - Put the database-id and the API-token in a .env variable.
 ```

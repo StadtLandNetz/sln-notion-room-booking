@@ -40,6 +40,17 @@ export async function getNotionItems() {
 	const pageObjectResults = response.results.filter(
 		(result): result is PageObjectResponse => result.object === 'page'
 	);
+	pageObjectResults.sort((a, b) => {
+		const fromA = a.properties.Slot.type === 'date' && a.properties.Slot.date ? new Date(a.properties.Slot.date.start).getTime() : 0;
+		const fromB = b.properties.Slot.type === 'date' && b.properties.Slot.date ? new Date(b.properties.Slot.date.start).getTime() : 0;
+		const toA = a.properties.Slot.type === 'date' && a.properties.Slot.date && a.properties.Slot.date.end ? new Date(a.properties.Slot.date.end).getTime() : 0;
+		const toB = b.properties.Slot.type === 'date' && b.properties.Slot.date && b.properties.Slot.date.end ? new Date(b.properties.Slot.date.end).getTime() : 0;
+
+		if (fromA === fromB) {
+			return toA - toB;
+		}
+		return fromA - fromB;
+	});
 	return mapBookingItems(pageObjectResults);
 }
 

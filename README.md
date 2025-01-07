@@ -6,7 +6,8 @@
   1. An easy API for pulling the items per room.
   2. A simple frontend to display all bookings.
 
-![Meeting Room Database Example](screenshot.png)
+![Meeting Room Database Example](screenshots/screenshot.png)
+![Meeting Room Database Example](screenshots/database.png)
 
 # How to use
 - [Create a Notion integration](https://www.notion.so/profile/integrations)

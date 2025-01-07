@@ -13,7 +13,7 @@ spec:
       - sln-bookings.nova-hub.app
       secretName: sln-bookings-tls
   rules:
-  - host: changelog.nova-hub.app
+  - host: sln-bookings.nova-hub.app
     http:
       paths:
       - pathType: Prefix

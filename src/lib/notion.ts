@@ -5,6 +5,9 @@ dotenv.config();
 const NOTION_TOKEN = process.env.NOTION_TOKEN!;
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 
+console.log("🚀 ~ NOTION_TOKEN:", NOTION_TOKEN)
+console.log("🚀 ~ NOTION_DATABASE_ID:", NOTION_DATABASE_ID)
+
 const notion = new Client({
 	auth: NOTION_TOKEN
 });

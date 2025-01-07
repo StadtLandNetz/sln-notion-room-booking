@@ -19,12 +19,12 @@ spec:
           - name: NOTION_TOKEN
             valueFrom:
               secretKeyRef:
-                name: sln-bookings-notion-token
+                name: sln-bookings
                 key: NOTION_TOKEN
-          - name: NOTION_DBID
+          - name: NOTION_DATABASE_ID
             valueFrom:
               secretKeyRef:
-                name: sln-bookings-notion-database
+                name: sln-bookings
                 key: NOTION_DATABASE_ID
         resources:
           limits:

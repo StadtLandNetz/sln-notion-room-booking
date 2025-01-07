@@ -1,15 +1,28 @@
-import type { PageLoad } from './$types';
+import {
+	type BookingItem,
+	getNotionItems,
+	getCurrentBookingItems,
+  extractUniqueRoomsFromBooking,
+  getTodayFutureBookingItems,
+	type Room
+} from '$lib/notion';
+import type { PageServerLoad } from './$types';
 
-export const load: PageLoad = async ({ fetch }) => {
-  const res = await fetch('/api/notion');
-  const data = await res.json();
+export const load: PageServerLoad = async () => {
+// export const load: PageServerLoad = async ({ params }) => {
+	// const lang: string = params.room;
 
-  if (!data.success) {
-    console.error('Fehler beim Laden aus Notion:', data.error);
-    // Du kannst hier optional ein Error- oder Redirect-Handling einbauen
-  }
+	const notionItems: BookingItem[] = await getNotionItems();
+	const currentItems: BookingItem[] = getCurrentBookingItems(notionItems);
+  const futureItems: BookingItem[] = getTodayFutureBookingItems(notionItems);
+  
+	const rooms: Room[] = await extractUniqueRoomsFromBooking(notionItems);
 
-  return {
-    notionData: data.data ?? []
-  };
+	return {
+		props: {
+			rooms,
+			currentItems,
+			futureItems
+		}
+	};
 };

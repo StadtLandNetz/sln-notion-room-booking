@@ -14,12 +14,17 @@ export type BookingItem = {
 	user: string[];
 	duration: string;
 };
+export type Room = {
+	room: string;
+	roomUUID: string;
+}
 
 // ROOMS
 // - Propeller-Room:    b7474db4-c78b-4d37-b2af-9b2e8314a5bd
 // - Duo-Booth:         2d67d893-535e-4e69-a335-ab48475ad58b
 // - Single-Booth:      c6767b34-a9a2-4451-9103-821205b249c2
 // - Meeting-Room:      070b77f9-8355-4166-922b-b3fc050097a6
+
 
 export async function getNotionItems() {
 	const response = await notion.databases.query({
@@ -53,8 +58,9 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 				const room = roomProperty?.name ?? '';
 				const roomUUID = roomProperty?.id ?? '';
 
-				// Start-/Enddatum aus "Slot"
-                const addHours = 1 * 60 * 60 * 1000; // zeit korrigieren zwischen notion und server
+                // Start-/Enddatum aus "Slot"
+                const correctHoursBy = 0
+                const addHours = correctHoursBy * 60 * 60 * 1000; // zeit korrigieren zwischen notion und server
                 const from = slotProperty?.start
                 ? new Date(new Date(slotProperty.start).getTime() + addHours)
                 : new Date(Date.now() + addHours);
@@ -90,9 +96,24 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 			})
 	);
 }
+export function extractUniqueRoomsFromBooking(items: BookingItem[]): Room[] {
+	const allRooms = items.map((item) => ({
+		room: item.room,
+		roomUUID: item.roomUUID
+	}));
+
+	// Rooms anhand der roomUUID eindeutiger machen
+	const uniqueRooms = Array.from(
+		new Set(allRooms.map((r) => r.roomUUID))
+	).map((uuid) => allRooms.find((r) => r.roomUUID === uuid)!);
+
+	return uniqueRooms;
+}
 
 export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 	const now = new Date();
+	// In 15 Minuten
+	const nowPlus15 = new Date(now.getTime() + 15 * 60 * 1000);
 
 	return items
 		.map((item) => {
@@ -101,8 +122,8 @@ export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 			endOfStartDay.setDate(endOfStartDay.getDate() + 1); // +1 Tag
 			endOfStartDay.setHours(0, 0, 0, 0);                  // auf 00:00 Uhr setzen
 
-			// Prüfe, ob das End-Datum (item.to) bereits über den Start-Tag hinausgeht
-			// (sprich, ob es am oder nach Mitternacht des Folgetags liegt).
+			// Wenn das End-Datum (item.to) über den Start-Tag hinausgeht,
+			// kürzen wir es auf Mitternacht des Folgetages
 			if (item.to >= endOfStartDay) {
 				item.to = endOfStartDay;
 			}
@@ -110,14 +131,18 @@ export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 			return item;
 		})
 		.filter((item) => {
-			// "Jetzt gültig" heißt: from <= now <= to
-			return item.from <= now && now <= item.to;
+			// Neu: "jetzt" ODER innerhalb der nächsten 15 Minuten beginnt
+			// => item.from <= nowPlus15
+			// UND es ist noch nicht vorbei => now <= item.to
+			return item.from <= nowPlus15 && now <= item.to;
 		});
 }
 
 
+
 export function getTodayFutureBookingItems(items: BookingItem[]): BookingItem[] {
     const now = new Date();
+    const nowPlus15 = new Date(now.getTime() + 15 * 60 * 1000);
   
     // Anfang und Ende des heutigen Tages (lokale Zeit)
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -126,10 +151,12 @@ export function getTodayFutureBookingItems(items: BookingItem[]): BookingItem[] 
     return items.filter((item) => {
       // item.from muss >= "jetzt" (Zukunft) sein
       // und im heutigen Tagesbereich liegen
+      // und nicht in den nächsten 15 Minuten beginnen
       return (
         item.from >= now &&
         item.from >= startOfToday &&
-        item.from <= endOfToday
+        item.from <= endOfToday &&
+        item.from > nowPlus15
       );
     });
 }

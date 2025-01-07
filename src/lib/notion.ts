@@ -1,4 +1,3 @@
-// Beispiel-Datei, in der die Notion-Funktion ausgelagert ist
 import { Client } from '@notionhq/client';
 import dotenv from 'dotenv';
 dotenv.config();

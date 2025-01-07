@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sln-bookings
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sln-bookings
+  template:
+    metadata:
+      labels:
+        app: sln-bookings
+    spec:
+      containers:
+      - name: sln-bookings
+        image: ghcr.io/stadtlandnetz/sln-notion-room-booking:main
+        env:
+          - name: NOTION_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: sln-bookings-notion-token
+                key: NOTION_TOKEN
+          - name: NOTION_DBID
+            valueFrom:
+              secretKeyRef:
+                name: sln-bookings-notion-database
+                key: NOTION_DATABASE_ID
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+        - name: github-registry

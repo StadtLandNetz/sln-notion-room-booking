@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sln-bookings
+spec:
+  selector:
+    app: sln-bookings
+  ports:
+  - port: 80
+    targetPort: 3000

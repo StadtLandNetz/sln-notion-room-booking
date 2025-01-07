@@ -1,6 +1,10 @@
 // Beispiel-Datei, in der die Notion-Funktion ausgelagert ist
 import { Client } from '@notionhq/client';
-import { NOTION_TOKEN, NOTION_DATABASE_ID } from '$env/static/private';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const NOTION_TOKEN = process.env.NOTION_TOKEN!;
+const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 
 const notion = new Client({
 	auth: NOTION_TOKEN

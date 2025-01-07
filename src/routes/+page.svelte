@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
+	// Deine Typen und Daten
 	import type { BookingItem, Room } from '$lib/notion';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
+	// Daten aus dem load()-Ergebnis
 	const currentItems: BookingItem[] = data.props.currentItems;
 	const futureItems: BookingItem[] = data.props.futureItems;
 	const rooms: Room[] = data.props.rooms;
@@ -19,33 +22,25 @@
 		};
 	});
 
-	/**
-	 * Wir speichern "now" als Variable.
-	 * Svelte erkennt jede Änderung und re-rendert das Template.
-	 */
 	let now = new Date();
 
-	/**
-	 * Für die Anzeige der Uhrzeit im Titel
-	 */
 	let timeString = now.toLocaleTimeString('de', {
 		hour: '2-digit',
 		minute: '2-digit',
 		second: '2-digit'
 	});
 
-	/**
-	 * Berechnet die verbleibende Zeit (in Minuten) bis "to"
-	 * und wird jedes Mal aufgerufen, wenn "now" neu gesetzt wird.
-	 */
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
 		const diff = to.getTime() - currentNow.getTime();
 		const minutes = Math.floor(diff / 60000);
 		return `${minutes} min remaining`;
 	}
 
+	let counter = 0;
+
 	onMount(() => {
-		// 1) Jede Sekunde "now" und "timeString" aktualisieren
+		console.log('reload page');
+		// 1) Jede Sekunde: Uhrzeit aktualisieren
 		const intervalClock = setInterval(() => {
 			now = new Date();
 			timeString = now.toLocaleTimeString('de', {
@@ -55,11 +50,18 @@
 			});
 		}, 1000);
 
-		// 2) (Optional) Alle 60 Sekunden Seite neu laden
+		// 2) Alle 60 Sekunden: Seite neu laden durch geänderten Query-Parameter
 		const intervalReload = setInterval(() => {
+			counter++;
+			console.log('🚀 ~ intervalReload ~ counter:', counter);
+			// goto(`?ts=${Date.now()}&count=${counter}`, {
+			// 	replaceState: true,
+			// 	invalidateAll: true
+			// });
 			location.reload();
-		}, 60_000); // = 1 Minute
+		}, 6000);
 
+		// Aufräumen bei Komponentenausblendung
 		return () => {
 			clearInterval(intervalClock);
 			clearInterval(intervalReload);
@@ -68,7 +70,9 @@
 </script>
 
 <div class="container">
-	<h1>{timeString} Uhr</h1>
+	<img class="logo" src="/logo.png" alt="" />
+	<h1>SLN Office</h1>
+	<p>{timeString} Uhr</p>
 
 	<table>
 		<thead>
@@ -80,6 +84,9 @@
 			</tr>
 		</thead>
 		<tbody>
+			<tr>
+				<td colspan="4" style="" class="devider"> </td>
+			</tr>
 			{#each rooms as room}
 				{#if room.roomUUID !== ''}
 					<!-- Raumüberschrift -->
@@ -93,16 +100,14 @@
 					<!-- Keine Items? -->
 					{#if roomItemMap[room.roomUUID].current.length === 0 && roomItemMap[room.roomUUID].future.length === 0}
 						<tr>
-							<td colspan="4" style="text-align:center; opacity:0.6;">
-								Keine Items für diesen Raum
-							</td>
+							<td colspan="4" class="room"> Keine Items für diesen Raum </td>
 						</tr>
 					{/if}
 
 					<!-- Aktuelle Buchungen -->
 					{#each roomItemMap[room.roomUUID].current as item}
 						<tr class="current">
-							<td>🗓️ {item.user.join(', ')}</td>
+							<td>🟢 {item.user.join(', ')}</td>
 							<td>
 								{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 							</td>
@@ -116,7 +121,7 @@
 					<!-- Zukünftige Buchungen -->
 					{#each roomItemMap[room.roomUUID].future as item}
 						<tr class="future">
-							<td>⏱️ {item.user.join(', ')}</td>
+							<td>⚪️ {item.user.join(', ')}</td>
 							<td>
 								{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 							</td>
@@ -126,6 +131,9 @@
 							<td>{item.duration}</td>
 						</tr>
 					{/each}
+					<tr>
+						<td colspan="4" style="" class="devider"> </td>
+					</tr>
 				{/if}
 			{/each}
 		</tbody>
@@ -146,8 +154,10 @@
 		max-width: 800px;
 		padding: 25px;
 	}
+	h1 {
+		font-size: 32px;
+	}
 	h2 {
-		margin-top: 1em;
 		font-size: 24px;
 		float: left;
 		font-weight: bold;
@@ -168,16 +178,30 @@
 	}
 	tr.current {
 		background-color: #ebf3ea;
-		color: #179809;
-		font-weight: bold;
+		color: #1f9012;
+		/* font-weight: bold; */
 		border: 2px solid #abdaa6;
 	}
 	tr.future {
-		/* zukünftige Bookings falls gewünscht stylen */
+		color: #5a5a5a;
 	}
 	code {
 		font-size: 12px;
 		float: right;
-		margin-top: 40px;
+		margin-top: 10px;
+	}
+	.devider,
+	.room {
+		text-align: center;
+		opacity: 0.6;
+	}
+	.devider {
+		font-size: 10px;
+		border-left: transparent;
+		border-right: transparent;
+	}
+	.logo {
+		width: 64px;
+		float: right;
 	}
 </style>

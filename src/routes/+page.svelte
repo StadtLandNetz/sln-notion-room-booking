@@ -40,7 +40,7 @@
 
 	onMount(() => {
 		console.log('reload page');
-		// 1) Jede Sekunde: Uhrzeit aktualisieren
+		// refresh time every second
 		const intervalClock = setInterval(() => {
 			now = new Date();
 			timeString = now.toLocaleTimeString('de', {
@@ -50,7 +50,7 @@
 			});
 		}, 1000);
 
-		// 2) Alle 60 Sekunden: Seite neu laden durch geänderten Query-Parameter
+		// refresh page every 10 seconds to reload data
 		const intervalReload = setInterval(() => {
 			counter++;
 			console.log('🚀 ~ intervalReload ~ counter:', counter);

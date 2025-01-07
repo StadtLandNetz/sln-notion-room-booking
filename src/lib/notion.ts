@@ -54,8 +54,15 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 				const roomUUID = roomProperty?.id ?? '';
 
 				// Start-/Enddatum aus "Slot"
-				const from = slotProperty?.start ? new Date(slotProperty.start) : new Date();
-				const to = slotProperty?.end ? new Date(slotProperty.end) : new Date();
+                const addHours = 1 * 60 * 60 * 1000; // zeit korrigieren zwischen notion und server
+                const from = slotProperty?.start
+                ? new Date(new Date(slotProperty.start).getTime() + addHours)
+                : new Date(Date.now() + addHours);
+
+                const to = slotProperty?.end
+                ? new Date(new Date(slotProperty.end).getTime() + addHours)
+                : new Date(Date.now() + addHours);
+
 
 				// Person-Array (Namen) ermitteln
 				const user = personProperty
@@ -89,17 +96,14 @@ export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 
 	return items
 		.map((item) => {
-			// Prüfe, ob die Buchung länger als 24 Stunden dauert
-			const diffMs = item.to.getTime() - item.from.getTime();
-			const oneDayMs = 24 * 60 * 60 * 1000;
+			// Bestimme "Mitternacht des Folgetags" basierend auf dem Start-Datum
+			const endOfStartDay = new Date(item.from);
+			endOfStartDay.setDate(endOfStartDay.getDate() + 1); // +1 Tag
+			endOfStartDay.setHours(0, 0, 0, 0);                  // auf 00:00 Uhr setzen
 
-			if (diffMs > oneDayMs) {
-				// Falls länger als 1 Tag, Ende auf "Mitternacht nach dem Starttag" setzen
-				const endOfStartDay = new Date(item.from);
-				// "24:00 Uhr des Anfangstags" = 00:00 Uhr des Folgetages
-				endOfStartDay.setDate(endOfStartDay.getDate() + 1);
-				endOfStartDay.setHours(0, 0, 0, 0);
-
+			// Prüfe, ob das End-Datum (item.to) bereits über den Start-Tag hinausgeht
+			// (sprich, ob es am oder nach Mitternacht des Folgetags liegt).
+			if (item.to >= endOfStartDay) {
 				item.to = endOfStartDay;
 			}
 
@@ -110,6 +114,7 @@ export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 			return item.from <= now && now <= item.to;
 		});
 }
+
 
 export function getTodayFutureBookingItems(items: BookingItem[]): BookingItem[] {
     const now = new Date();
@@ -127,4 +132,9 @@ export function getTodayFutureBookingItems(items: BookingItem[]): BookingItem[] 
         item.from <= endOfToday
       );
     });
+}
+  
+
+export function filterBookingsByRoom(items: BookingItem[], roomUUID: string): BookingItem[] {
+    return items.filter((item) => item.roomUUID === roomUUID);
   }

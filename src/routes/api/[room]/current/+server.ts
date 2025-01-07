@@ -1,16 +1,20 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-import { getNotionItems, getCurrentBookingItems } from '$lib/notion';
+import { getNotionItems, getCurrentBookingItems, filterBookingsByRoom, type BookingItem } from '$lib/notion';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ params }) => {
 	try {
-		const notionItems = await getNotionItems();
-		const items = getCurrentBookingItems(notionItems);
+		const notionItems:BookingItem[] = await getNotionItems();
+		const items:BookingItem[] = getCurrentBookingItems(notionItems);
 
+		const roomUUID = params.room; // "[room]" in der URL
+    const filteredItems = filterBookingsByRoom(items, roomUUID);
+    
 		return json({
 			success: true,
-			data: items
+			allItems: items,
+			filteredItems: filteredItems
 		});
 	} catch (error: unknown) {
 		console.error(error);

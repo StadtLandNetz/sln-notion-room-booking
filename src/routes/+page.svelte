@@ -100,7 +100,7 @@
 					<!-- Keine Items? -->
 					{#if roomItemMap[room.roomUUID].current.length === 0 && roomItemMap[room.roomUUID].future.length === 0}
 						<tr>
-							<td colspan="4" class="room"> Keine Items für diesen Raum </td>
+							<td colspan="4" class="room">no bookings today anymore</td>
 						</tr>
 					{/if}
 

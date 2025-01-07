@@ -1,38 +1,23 @@
-# sv
+# SLN meeting room service
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+- This is a very simple meeting room display.
+- It conntects over the Notion API to [our meeting room board](https://www.notion.so/stadtlandnetz/e724a89830bf4f7eb28f1e48248ea130?v=143c0d18854180adb3fe000c3780cab5):
+- It provides two ways:
+  1. An easy API for pulling the items per room.
+  2. A simple frontend to display all bookings.
 
-## Creating a project
+![Meeting Room Database Example](screenshot.png)
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+# How to use
+- [Create a Notion integration](https://www.notion.so/profile/integrations)
+- Apply this integration to your meeting room database. 
+  - [You can find an example here](https://stadtlandnetz.notion.site/174c0d1885418019bb84ea382e01bb73?v=174c0d18854181928e6f000cdcd457fd)
+  - Click the duplicate icon in the top right corner in order to copy the template into your Notion instance.
+- Put the database-id and the API-token in a .env variable.
 ```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+    NOTION_TOKEN=YOURTOKEM
+    NOTION_DATABASE_ID=YOURDATABASE
 ```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- run `npm i`
+- run `npm run dev -- --open`
+- the server starts and you can access mainpage as well as the API-subroutes

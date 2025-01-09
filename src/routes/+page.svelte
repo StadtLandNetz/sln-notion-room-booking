@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	// Deine Typen und Daten
+	import { invalidate } from '$app/navigation';
 	import type { BookingItem, Room } from '$lib/notion';
 	import type { PageData } from './$types';
 
@@ -54,10 +53,6 @@
 		const intervalReload = setInterval(() => {
 			counter++;
 			console.log('🚀 ~ intervalReload ~ counter:', counter);
-			// goto(`?ts=${Date.now()}&count=${counter}`, {
-			// 	replaceState: true,
-			// 	invalidateAll: true
-			// });
 			location.reload();
 		}, 6000);
 
@@ -67,6 +62,46 @@
 			clearInterval(intervalReload);
 		};
 	});
+
+	// Funktion zum Aufrufen der Action
+	async function submitBooking(roomUUID: string) {
+		try {
+			// Erstelle ein neues FormData-Objekt
+			const formData = new FormData();
+
+			// Füge zusätzliche erforderliche Felder hinzu
+			formData.append('roomUUID', roomUUID);
+			formData.append('room', 'Duo-Booth'); // Beispiel: Name des Raums
+			formData.append('from', new Date().toISOString()); // Startzeitpunkt (jetzt)
+			formData.append('to', new Date(Date.now() + 3600000).toISOString()); // Endzeitpunkt (in 1 Stunde)
+			formData.append('title', 'Team Meeting');
+
+			// Sende die Daten an die aktuelle Seite (Action)
+			const response = await fetch('', {
+				// Leerer String bedeutet die aktuelle URL
+				method: 'POST',
+				body: formData
+			});
+
+			// Verarbeite die JSON-Antwort
+			const result = await response.json();
+
+			if (result.success) {
+				// Aktualisiere die Seite oder Daten
+				await invalidate(''); // Lädt die Daten neu, falls du `invalidate` verwendest
+
+				console.log('Buchung erfolgreich erstellt:', result.data);
+				alert('Buchung erfolgreich erstellt!');
+			} else {
+				// Fehlerbehandlung
+				console.error('Fehler beim Erstellen der Buchung:', result.error);
+				alert(`Fehler: ${result.error}`);
+			}
+		} catch (error) {
+			console.error('Ein unerwarteter Fehler ist aufgetreten:', error);
+			alert('Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.');
+		}
+	}
 </script>
 
 <div class="container">
@@ -94,6 +129,7 @@
 						<td colspan="4">
 							<h2>{room.room}</h2>
 							<code>{room.roomUUID}</code>
+							<button on:click={() => submitBooking(room.roomUUID)}> Buchung erstellen </button>
 						</td>
 					</tr>
 

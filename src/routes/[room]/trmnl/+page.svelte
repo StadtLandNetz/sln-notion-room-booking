@@ -31,49 +31,63 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
-<div class="header">
+<div
+	style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;"
+>
 	<div>
-		<h1 class="title">SLN Office - {room?.room || roomParam}</h1>
-		<p class="time">{now.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} Uhr</p>
+		<h1 style="font-size: 24px; font-weight: bold; color: #000; margin: 0;">
+			SLN Office - {room?.room || roomParam}
+		</h1>
+		<p style="font-size: 14px; color: #666; margin: 0;">
+			{now.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} Uhr
+		</p>
 	</div>
-	<!-- Logo für TRMNL problematisch - verwende Text stattdessen -->
-	<div class="logo-text">SLN</div>
+	<div
+		style="font-size: 18px; font-weight: bold; color: #000; padding: 4px 8px; text-align: center;"
+	>
+		<img
+			class="logo"
+			style="text-align: right; width:50px;"
+			src="{baseUrl}/logo.png"
+			alt="SLN Logo"
+		/>
+	</div>
 </div>
 
 {#if !room}
-	<div class="error">
+	<div style="text-align: center; padding: 20px; border: 2px solid #000; background: #f0f0f0;">
 		<p>Raum "{roomParam}" nicht gefunden.</p>
 	</div>
 {:else if currentItems.length === 0 && futureItems.length === 0}
-	<div class="no-bookings">
+	<div style="text-align: center; color: #666; font-style: italic; padding: 20px;">
 		<p>Keine Buchungen für heute</p>
 	</div>
 {:else}
 	<!-- Erstes aktuelles Item als Hero -->
 	{#if currentItems.length > 0}
 		{@const firstItem = currentItems[0]}
-		<div class="hero-item">
-			<div class="hero-time">
+		<div style="background: #000; color: #fff; padding: 20px; margin: 20px 0; text-align: center;">
+			<div style="font-size: 36px; font-weight: bold; margin-bottom: 10px;">
 				{calculateRemainingTime(firstItem.to, now)}
 			</div>
-			<div class="hero-details">
+			<div style="font-size: 14px; margin-bottom: 8px;">
 				{formatTime(firstItem.from)} - {formatTime(firstItem.to)} Uhr
 			</div>
-			<div class="hero-title">
+			<div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">
 				{firstItem.title || 'Buchung'}
 			</div>
-			<div class="hero-user">
+			<div style="font-size: 18px; font-weight: bold;">
 				{firstItem.user.join(', ')}
 			</div>
 		</div>
 	{/if}
 
 	<!-- Weitere Buchungen als Liste -->
-	<div class="booking-list">
+	<div style="margin: 20px 0;">
 		<!-- Weitere aktuelle Buchungen -->
 		{#each currentItems.slice(1) as item}
-			<div class="booking-item current">
-				<div class="booking-label">■ AKTIV: {item.user.join(', ')}</div>
+			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
+				<div style="font-weight: bold; font-size: 14px;">■ AKTIV: {item.user.join(', ')}</div>
 				<div>VON {formatTime(item.from)} Uhr BIS {formatTime(item.to)} Uhr</div>
 				<div>NOCH {calculateRemainingTime(item.to, now)}</div>
 			</div>
@@ -81,143 +95,11 @@
 
 		<!-- Zukünftige Buchungen -->
 		{#each futureItems as item}
-			<div class="booking-item future">
-				<div class="booking-label">□ GEPLANT: {item.user.join(', ')}</div>
+			<div style="color: #333; padding: 8px 0; border-bottom: 1px solid #ccc;">
+				<div style="font-weight: bold; font-size: 14px;">□ GEPLANT: {item.user.join(', ')}</div>
 				<div>VON {formatTime(item.from)} Uhr BIS {formatTime(item.to)} Uhr</div>
 				<div>DAUER {item.duration}</div>
 			</div>
 		{/each}
 	</div>
 {/if}
-
-<style>
-	/* TRMNL-optimiertes CSS - komplett inline */
-	:global(body) {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-		line-height: 1.4;
-		color: #000;
-		background-color: #fff;
-		font-size: 16px;
-		padding: 15px;
-		margin: 0;
-	}
-
-	.header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 20px;
-		border-bottom: 2px solid #000;
-		padding-bottom: 10px;
-	}
-
-	.title {
-		font-size: 24px;
-		font-weight: bold;
-		color: #000;
-		margin: 0;
-	}
-
-	.time {
-		font-size: 14px;
-		color: #666;
-		margin: 0;
-	}
-
-	.logo-text {
-		font-size: 18px;
-		font-weight: bold;
-		color: #000;
-		border: 2px solid #000;
-		padding: 4px 8px;
-		text-align: center;
-	}
-
-	/* Hero-Item für TRMNL */
-	.hero-item {
-		background: #000;
-		color: #fff;
-		padding: 20px;
-		margin: 20px 0;
-		text-align: center;
-	}
-
-	.hero-time {
-		font-size: 36px;
-		font-weight: bold;
-		margin-bottom: 10px;
-	}
-
-	.hero-details {
-		font-size: 14px;
-		margin-bottom: 8px;
-	}
-
-	.hero-title {
-		font-size: 16px;
-		font-weight: bold;
-		margin-bottom: 4px;
-	}
-
-	.hero-user {
-		font-size: 18px;
-		font-weight: bold;
-	}
-
-	/* Listen-Layout statt Tabellen */
-	.booking-list {
-		margin: 20px 0;
-	}
-
-	.booking-item {
-		padding: 8px 0;
-		border-bottom: 1px solid #ccc;
-	}
-
-	.booking-item.current {
-		background: #000;
-		color: #fff;
-		padding: 8px;
-		margin-bottom: 4px;
-		border: none;
-	}
-
-	.booking-item.future {
-		color: #333;
-	}
-
-	.booking-label {
-		font-weight: bold;
-		font-size: 14px;
-	}
-
-	.no-bookings {
-		text-align: center;
-		color: #666;
-		font-style: italic;
-		padding: 20px;
-	}
-
-	.error {
-		text-align: center;
-		padding: 20px;
-		border: 2px solid #000;
-		background: #f0f0f0;
-	}
-
-	/* Kompakte Darstellung */
-	@media (max-width: 600px) {
-		:global(body) {
-			padding: 10px;
-			font-size: 14px;
-		}
-		
-		.title {
-			font-size: 20px;
-		}
-		
-		.hero-time {
-			font-size: 28px;
-		}
-	}
-</style>

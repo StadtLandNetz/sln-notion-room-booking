@@ -23,6 +23,13 @@
 	function formatTime(date: Date): string {
 		return date.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' });
 	}
+
+	function calculateFreeTime(items: BookingItem[], currentNow: Date): number {
+		if (items.length === 0) return -1; // Komplett frei
+		const nextItem = items[0];
+		const diff = nextItem.from.getTime() - currentNow.getTime();
+		return Math.floor(diff / 60000); // Minuten bis zum nächsten Termin
+	}
 </script>
 
 <svelte:head>
@@ -59,11 +66,14 @@
 		<p>Raum "{roomParam}" nicht gefunden.</p>
 	</div>
 {:else if currentItems.length === 0 && futureItems.length === 0}
-	<div style="text-align: center; color: #666; font-style: italic; padding: 20px;">
-		<p>Keine Buchungen für heute</p>
+	<!-- Komplett frei - keine Termine -->
+	<div style="background: #666; color: #fff; padding: 40px; margin: 20px 0; text-align: center;">
+		<div style="font-size: 48px; font-weight: bold;">
+			FREE
+		</div>
 	</div>
 {:else}
-	<!-- Erstes aktuelles Item als Hero -->
+	<!-- Aktueller Termin läuft -->
 	{#if currentItems.length > 0}
 		{@const firstItem = currentItems[0]}
 		<div style="background: #000; color: #fff; padding: 20px; margin: 20px 0; text-align: center;">
@@ -80,11 +90,29 @@
 				{firstItem.user.join(', ')}
 			</div>
 		</div>
+	<!-- Kein aktueller Termin, aber zukünftige vorhanden -->
+	{:else if futureItems.length > 0}
+		{@const nextItem = futureItems[0]}
+		{@const freeMinutes = calculateFreeTime(futureItems, now)}
+		<div style="background: #666; color: #fff; padding: 20px; margin: 20px 0; text-align: center;">
+			<div style="font-size: 36px; font-weight: bold; margin-bottom: 10px;">
+				FREE FOR {freeMinutes} mins
+			</div>
+			<div style="font-size: 14px; margin-bottom: 8px;">
+				Nächster Termin: {formatTime(nextItem.from)} - {formatTime(nextItem.to)} Uhr
+			</div>
+			<div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">
+				{nextItem.title || 'Buchung'}
+			</div>
+			<div style="font-size: 18px; font-weight: bold;">
+				{nextItem.user.join(', ')}
+			</div>
+		</div>
 	{/if}
 
 	<!-- Weitere Buchungen als Liste -->
 	<div style="margin: 20px 0;">
-		<!-- Weitere aktuelle Buchungen -->
+		<!-- Weitere aktuelle Buchungen (falls vorhanden) -->
 		{#each currentItems.slice(1) as item}
 			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
 				<div style="font-weight: bold; font-size: 14px;">■ AKTIV: {item.user.join(', ')}</div>
@@ -93,8 +121,8 @@
 			</div>
 		{/each}
 
-		<!-- Zukünftige Buchungen -->
-		{#each futureItems as item}
+		<!-- Zukünftige Buchungen (ohne erste, falls sie im Hero angezeigt wird) -->
+		{#each (currentItems.length > 0 ? futureItems : futureItems.slice(1)) as item}
 			<div style="color: #333; padding: 8px 0; border-bottom: 1px solid #ccc;">
 				<div style="font-weight: bold; font-size: 14px;">□ GEPLANT: {item.user.join(', ')}</div>
 				<div>VON {formatTime(item.from)} Uhr BIS {formatTime(item.to)} Uhr</div>

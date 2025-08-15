@@ -174,19 +174,17 @@ export function getCurrentBookingItems(items: BookingItem[]): BookingItem[] {
 export function getTodayFutureBookingItems(items: BookingItem[]): BookingItem[] {
 	const now = new Date();
 	const nowPlus15 = new Date(now.getTime() + 15 * 60 * 1000);
-
-	// Anfang und Ende des heutigen Tages (lokale Zeit)
-	const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-	const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+	
+	// 12 Stunden im Voraus anstatt nur bis Ende des Tages
+	const next12Hours = new Date(now.getTime() + 12 * 60 * 60 * 1000);
 
 	return items.filter((item) => {
 		// item.from muss >= "jetzt" (Zukunft) sein
-		// und im heutigen Tagesbereich liegen
+		// und innerhalb der nächsten 12 Stunden liegen
 		// und nicht in den nächsten 15 Minuten beginnen
 		return (
 			item.from >= now &&
-			item.from >= startOfToday &&
-			item.from <= endOfToday &&
+			item.from <= next12Hours &&
 			item.from > nowPlus15
 		);
 	});

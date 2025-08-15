@@ -7,9 +7,9 @@
 	export let data: PageData;
 
 	// Daten aus dem load()-Ergebnis
-	const currentItems: BookingItem[] = data.props.currentItems;
-	const futureItems: BookingItem[] = data.props.futureItems;
-	const rooms: Room[] = data.props.rooms;
+	const currentItems: BookingItem[] = data.currentItems;
+	const futureItems: BookingItem[] = data.futureItems;
+	const rooms: Room[] = data.rooms.sort((a, b) => a.room.localeCompare(b.room));
 
 	// Map roomUUID -> { current: BookingItem[], future: BookingItem[] }
 	const roomItemMap: Record<string, { current: BookingItem[]; future: BookingItem[] }> = {};
@@ -50,10 +50,10 @@
 		}, 1000);
 
 		// refresh page every 10 seconds to reload data
-		const intervalReload = setInterval(() => {
+		const intervalReload = setInterval(async () => {
 			counter++;
 			console.log('🚀 ~ intervalReload ~ counter:', counter);
-			location.reload();
+			await invalidate('');
 		}, 6000);
 
 		// Aufräumen bei Komponentenausblendung
@@ -62,46 +62,6 @@
 			clearInterval(intervalReload);
 		};
 	});
-
-	// Funktion zum Aufrufen der Action
-	async function submitBooking(roomUUID: string) {
-		try {
-			// Erstelle ein neues FormData-Objekt
-			const formData = new FormData();
-
-			// Füge zusätzliche erforderliche Felder hinzu
-			formData.append('roomUUID', roomUUID);
-			formData.append('room', 'Duo-Booth'); // Beispiel: Name des Raums
-			formData.append('from', new Date().toISOString()); // Startzeitpunkt (jetzt)
-			formData.append('to', new Date(Date.now() + 3600000).toISOString()); // Endzeitpunkt (in 1 Stunde)
-			formData.append('title', 'Team Meeting');
-
-			// Sende die Daten an die aktuelle Seite (Action)
-			const response = await fetch('', {
-				// Leerer String bedeutet die aktuelle URL
-				method: 'POST',
-				body: formData
-			});
-
-			// Verarbeite die JSON-Antwort
-			const result = await response.json();
-
-			if (result.success) {
-				// Aktualisiere die Seite oder Daten
-				await invalidate(''); // Lädt die Daten neu, falls du `invalidate` verwendest
-
-				console.log('Buchung erfolgreich erstellt:', result.data);
-				alert('Buchung erfolgreich erstellt!');
-			} else {
-				// Fehlerbehandlung
-				console.error('Fehler beim Erstellen der Buchung:', result.error);
-				alert(`Fehler: ${result.error}`);
-			}
-		} catch (error) {
-			console.error('Ein unerwarteter Fehler ist aufgetreten:', error);
-			alert('Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.');
-		}
-	}
 </script>
 
 <div class="container">
@@ -126,10 +86,9 @@
 				{#if room.roomUUID !== ''}
 					<!-- Raumüberschrift -->
 					<tr>
-						<td colspan="4">
-							<h2>{room.room}</h2>
-							<code>{room.roomUUID}</code>
-							<button on:click={() => submitBooking(room.roomUUID)}> Buchung erstellen </button>
+						<td colspan="4" class="room-cell">
+							<h2><a href="/{room.roomUUID}" class="room-title">{room.room}</a></h2>
+							<code class="room-uuid">{room.roomUUID}</code>
 						</td>
 					</tr>
 
@@ -187,7 +146,7 @@
 <style>
 	.container {
 		margin: 0 auto;
-		max-width: 800px;
+		max-width: 100%;
 		padding: 25px;
 	}
 	h1 {
@@ -198,8 +157,32 @@
 		float: left;
 		font-weight: bold;
 	}
+	.room-title {
+		color: inherit;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.room-title:hover {
+		color: #007bff;
+		text-decoration: underline;
+	}
+	.room-cell {
+		position: relative;
+	}
+	.room-uuid {
+		font-size: 12px;
+		float: right;
+		margin-top: 10px;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+	.room-cell:hover .room-uuid {
+		opacity: 1;
+	}
 	table {
-		width: 100%;
+		width: 900;
+		max-width: 100%;
+		margin: 0 auto;
 		border-collapse: collapse;
 	}
 	td,
@@ -221,11 +204,6 @@
 	tr.future {
 		color: #5a5a5a;
 	}
-	code {
-		font-size: 12px;
-		float: right;
-		margin-top: 10px;
-	}
 	.devider,
 	.room {
 		text-align: center;
@@ -239,5 +217,80 @@
 	.logo {
 		width: 64px;
 		float: right;
+	}
+
+	/* Mobile responsive design für Displays < 1000px - nur für Hauptseite */
+	@media (max-width: 999px) {
+		.container {
+			padding: 10px;
+		}
+
+		table {
+			width: 100%;
+		}
+
+		h1 {
+			font-size: 20px;
+		}
+
+		h2 {
+			font-size: 14px;
+		}
+
+		p {
+			font-size: 12px;
+		}
+
+		td,
+		th {
+			padding: 0.2em;
+			font-size: 10px;
+		}
+
+		.room-uuid {
+			font-size: 8px;
+			margin-top: 5px;
+		}
+
+		.room-title {
+			font-size: 12px;
+		}
+
+		.logo {
+			width: 32px;
+		}
+
+		.devider {
+			font-size: 8px;
+		}
+	}
+
+	/* Sehr kompakte Darstellung für kleinste Screens */
+	@media (max-width: 600px) {
+		.container {
+			padding: 5px;
+		}
+
+		h1 {
+			font-size: 16px;
+		}
+
+		h2 {
+			font-size: 12px;
+		}
+
+		td,
+		th {
+			padding: 0.1em;
+			font-size: 9px;
+		}
+
+		.room-title {
+			font-size: 10px;
+		}
+
+		.room-uuid {
+			font-size: 7px;
+		}
 	}
 </style>

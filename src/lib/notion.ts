@@ -87,7 +87,7 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 					page.properties?.Person?.type === 'people' ? page.properties.Person.people : [];
 				const durationProperty =
 					page.properties?.Duration?.type === 'formula' ? page.properties.Duration.formula : null;
-
+				
 				// Extrahiere die Werte:
 				const room = roomProperty?.name ?? '';
 				const roomUUID = roomProperty?.id ?? '';

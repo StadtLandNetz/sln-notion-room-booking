@@ -2,7 +2,32 @@
 	import '../app.css';
 	import { navigating } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
+	
 	let { children } = $props();
+	let isEInk = false;
+	
+	onMount(() => {
+		// Detect E-Ink displays by checking user agent or URL parameter
+		const urlParams = new URLSearchParams(window.location.search);
+		const userAgent = navigator.userAgent.toLowerCase();
+		
+		isEInk = urlParams.has('eink') || 
+		         userAgent.includes('trmnl') || 
+		         userAgent.includes('kindle') ||
+		         urlParams.get('display') === 'eink';
+		
+		if (isEInk) {
+			// Load E-Ink CSS
+			const einkCSS = document.createElement('link');
+			einkCSS.rel = 'stylesheet';
+			einkCSS.href = '/app-eink.css';
+			document.head.appendChild(einkCSS);
+			
+			// Add E-Ink body class
+			document.body.classList.add('eink-display');
+		}
+	});
 </script>
 
 {#if browser && $navigating}

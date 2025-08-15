@@ -66,6 +66,29 @@
 			<a href="/">← Zurück zur Übersicht</a>
 		</div>
 	{:else}
+		<!-- Erstes aktuelles Item - große Darstellung -->
+		{#if currentItems.length > 0}
+			{@const firstItem = currentItems[0]}
+			<div class="first-item-hero">
+				<div class="time-remaining">
+					{calculateRemainingTime(firstItem.to, now)}
+				</div>
+				<div class="item-details">
+					<div class="item-info">
+						<div class="time-range">
+							{firstItem.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} - {firstItem.to.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+						</div>
+						<div class="item-title">
+							{firstItem.title || 'Buchung'}
+						</div>
+					</div>
+					<div class="item-user">
+						{firstItem.user.join(', ')}
+					</div>
+				</div>
+			</div>
+		{/if}
+
 		<table>
 			<thead>
 				<tr>
@@ -83,10 +106,10 @@
 					</tr>
 				{/if}
 
-				<!-- Aktuelle Buchungen -->
-				{#each currentItems as item}
+				<!-- Aktuelle Buchungen (ohne erste, da schon oben angezeigt) -->
+				{#each currentItems.slice(1) as item}
 					<tr class="current">
-						<td>🟢 {item.user.join(', ')}</td>
+						<td><span class="status-current">{item.user.join(', ')}</span></td>
 						<td>
 							{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 						</td>
@@ -100,7 +123,7 @@
 				<!-- Zukünftige Buchungen -->
 				{#each futureItems as item}
 					<tr class="future">
-						<td>⚪️ {item.user.join(', ')}</td>
+						<td><span class="status-future">{item.user.join(', ')}</span></td>
 						<td>
 							{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 						</td>
@@ -171,5 +194,85 @@
 	.logo {
 		width: 64px;
 		float: right;
+	}
+	
+	/* Hero-Darstellung für das erste aktuelle Item */
+	.first-item-hero {
+		background: linear-gradient(135deg, #1f9012, #2db31d);
+		color: white;
+		border-radius: 12px;
+		padding: 30px;
+		margin: 20px 0 30px 0;
+		display: flex;
+		align-items: center;
+		gap: 30px;
+		box-shadow: 0 4px 12px rgba(31, 144, 18, 0.3);
+	}
+	
+	.time-remaining {
+		font-size: 48px;
+		font-weight: bold;
+		text-align: center;
+		line-height: 1;
+		flex-shrink: 0;
+		min-width: 200px;
+	}
+	
+	.item-details {
+		flex: 1;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 20px;
+	}
+	
+	.item-info {
+		flex: 1;
+	}
+	
+	.time-range {
+		font-size: 16px;
+		opacity: 0.9;
+		margin-bottom: 8px;
+		font-weight: 500;
+	}
+	
+	.item-title {
+		font-size: 20px;
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+	
+	.item-user {
+		font-size: 24px;
+		font-weight: bold;
+		text-align: right;
+		flex-shrink: 0;
+	}
+	
+	/* Responsive für Hero-Item */
+	@media (max-width: 768px) {
+		.first-item-hero {
+			flex-direction: column;
+			text-align: center;
+			padding: 20px;
+			gap: 20px;
+		}
+		
+		.time-remaining {
+			font-size: 36px;
+			min-width: auto;
+		}
+		
+		.item-details {
+			flex-direction: column;
+			gap: 15px;
+			text-align: center;
+		}
+		
+		.item-user {
+			text-align: center;
+			font-size: 20px;
+		}
 	}
 </style>

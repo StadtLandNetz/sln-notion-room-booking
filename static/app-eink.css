@@ -1,0 +1,322 @@
+/* E-Ink optimierte Version für TRMNL und ähnliche Geräte */
+/* Nur Schwarz-Weiß, hoher Kontrast, keine Farbverläufe */
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	line-height: 1.4;
+	color: #000;
+	background-color: #fff;
+	font-size: 16px;
+}
+
+.container {
+	margin: 0 auto;
+	max-width: 100%;
+	padding: 15px;
+}
+
+h1 {
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 8px;
+	color: #000;
+}
+
+h2 {
+	font-size: 18px;
+	font-weight: bold;
+	margin-bottom: 5px;
+	color: #000;
+}
+
+p {
+	margin-bottom: 10px;
+	color: #000;
+}
+
+.room-title {
+	color: #000;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.room-title:hover {
+	text-decoration: underline;
+}
+
+.room-uuid {
+	font-size: 12px;
+	float: right;
+	margin-top: 5px;
+	color: #666;
+}
+
+/* TRMNL-optimiert: Einfache Textblöcke statt Tabellen */
+.eink-display table {
+	display: block !important;
+	width: 100% !important;
+	border: none !important;
+	margin-top: 10px;
+}
+
+.eink-display thead, 
+.eink-display tfoot {
+	display: none !important;
+}
+
+.eink-display tbody {
+	display: block !important;
+}
+
+.eink-display tr {
+	display: block !important;
+	border: none !important;
+	margin-bottom: 8px;
+	padding: 8px 0;
+}
+
+.eink-display td, 
+.eink-display th {
+	display: inline !important;
+	border: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	background: none !important;
+}
+
+/* Aktuelle Buchungen - einfacher schwarzer Block */
+.eink-display tr.current {
+	background-color: #000 !important;
+	color: #fff !important;
+	padding: 8px !important;
+	margin-bottom: 4px !important;
+	border: none !important;
+}
+
+.eink-display tr.current td {
+	color: #fff !important;
+	background: none !important;
+}
+
+/* Zukünftige Buchungen - normaler Text */
+.eink-display tr.future {
+	color: #333 !important;
+	background: none !important;
+	border-bottom: 1px solid #ccc !important;
+	padding-bottom: 4px !important;
+}
+
+.eink-display tr.future td {
+	color: #333 !important;
+}
+
+/* Status-Symbole für E-Ink optimiert */
+.eink-display .status-current::before {
+	content: "■ AKTIV: ";
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.eink-display .status-future::before {
+	content: "□ GEPLANT: ";
+	font-weight: bold;
+	font-size: 14px;
+}
+
+/* TRMNL Text-Format für Buchungen */
+.eink-display tr.current td:nth-child(2):before { content: " VON "; }
+.eink-display tr.current td:nth-child(3):before { content: " BIS "; }
+.eink-display tr.current td:nth-child(4):before { content: " NOCH "; }
+
+.eink-display tr.future td:nth-child(2):before { content: " VON "; }
+.eink-display tr.future td:nth-child(3):before { content: " BIS "; }
+.eink-display tr.future td:nth-child(4):before { content: " DAUER "; }
+
+.devider {
+	text-align: center;
+	color: #666;
+	font-size: 12px;
+	border-left: none;
+	border-right: none;
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+.room-cell {
+	background-color: #f8f8f8;
+	border: 2px solid #000;
+	font-weight: bold;
+}
+
+.no-bookings {
+	text-align: center;
+	color: #666;
+	font-style: italic;
+	border: 1px solid #ccc;
+}
+
+/* TRMNL Room Cells */
+.eink-display .room-cell {
+	background: none !important;
+	border: none !important;
+	font-weight: bold !important;
+	margin: 16px 0 8px 0 !important;
+	padding: 0 !important;
+}
+
+.eink-display .room-cell td {
+	display: block !important;
+	border: none !important;
+	padding: 0 !important;
+}
+
+.eink-display .no-bookings {
+	text-align: left !important;
+	color: #666 !important;
+	font-style: italic !important;
+	border: none !important;
+	padding: 4px 0 !important;
+	margin: 4px 0 !important;
+}
+
+.eink-display .devider {
+	display: none !important; /* Hide dividers completely for TRMNL */
+}
+
+/* E-Ink Hero-Item Styling */
+.eink-display .first-item-hero {
+	background: #000 !important;
+	color: #fff !important;
+	border: 2px solid #000 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	padding: 20px !important;
+	margin: 15px 0 !important;
+	display: block !important;
+}
+
+.eink-display .time-remaining {
+	font-size: 36px !important;
+	font-weight: bold !important;
+	text-align: center !important;
+	margin-bottom: 10px !important;
+	display: block !important;
+}
+
+.eink-display .item-details {
+	display: block !important;
+	text-align: center !important;
+}
+
+.eink-display .item-info {
+	margin-bottom: 8px !important;
+}
+
+.eink-display .time-range {
+	font-size: 14px !important;
+	margin-bottom: 4px !important;
+}
+
+.eink-display .item-title {
+	font-size: 16px !important;
+	font-weight: bold !important;
+	margin-bottom: 4px !important;
+}
+
+.eink-display .item-user {
+	font-size: 18px !important;
+	font-weight: bold !important;
+	text-align: center !important;
+}
+
+.logo {
+	width: 48px;
+	float: right;
+	filter: grayscale(100%) contrast(150%);
+}
+
+.error {
+	text-align: center;
+	padding: 20px;
+	border: 2px solid #000;
+	background-color: #f0f0f0;
+}
+
+.error a {
+	color: #000;
+	text-decoration: underline;
+	font-weight: bold;
+}
+
+/* Kompakte Darstellung für kleinere E-Ink Displays */
+@media (max-width: 800px) {
+	.container {
+		padding: 8px;
+	}
+	
+	h1 {
+		font-size: 20px;
+	}
+	
+	h2 {
+		font-size: 16px;
+	}
+	
+	td, th {
+		padding: 4px 6px;
+		font-size: 12px;
+	}
+	
+	.logo {
+		width: 32px;
+	}
+	
+	.room-uuid {
+		font-size: 10px;
+	}
+}
+
+/* Extra kompakt für sehr kleine E-Ink Displays */
+@media (max-width: 600px) {
+	.container {
+		padding: 5px;
+	}
+	
+	h1 {
+		font-size: 18px;
+	}
+	
+	h2 {
+		font-size: 14px;
+	}
+	
+	td, th {
+		padding: 3px 4px;
+		font-size: 11px;
+	}
+	
+	.logo {
+		width: 24px;
+	}
+}
+
+/* Verstecke komplexe Elemente auf E-Ink */
+.loading-indicator {
+	display: none !important;
+}
+
+/* E-Ink spezifische Optimierungen */
+@media (prefers-color-scheme: no-preference) {
+	/* Entferne alle Farbverläufe und Schatten */
+	*, *::before, *::after {
+		background-image: none !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+	}
+}

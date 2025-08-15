@@ -102,7 +102,7 @@
 					<!-- Aktuelle Buchungen -->
 					{#each roomItemMap[room.roomUUID].current as item}
 						<tr class="current">
-							<td>🟢 {item.user.join(', ')}</td>
+							<td><span class="status-current">{item.user.join(', ')}</span></td>
 							<td>
 								{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 							</td>
@@ -116,7 +116,7 @@
 					<!-- Zukünftige Buchungen -->
 					{#each roomItemMap[room.roomUUID].future as item}
 						<tr class="future">
-							<td>⚪️ {item.user.join(', ')}</td>
+							<td><span class="status-future">{item.user.join(', ')}</span></td>
 							<td>
 								{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
 							</td>

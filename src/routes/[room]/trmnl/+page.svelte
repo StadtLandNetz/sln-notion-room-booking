@@ -36,7 +36,8 @@
 		<h1 class="title">SLN Office - {room?.room || roomParam}</h1>
 		<p class="time">{now.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} Uhr</p>
 	</div>
-	<img class="logo" src="{baseUrl}/logo.png" alt="SLN Logo" />
+	<!-- Logo für TRMNL problematisch - verwende Text stattdessen -->
+	<div class="logo-text">SLN</div>
 </div>
 
 {#if !room}
@@ -123,10 +124,13 @@
 		margin: 0;
 	}
 
-	.logo {
-		width: 48px;
-		height: auto;
-		filter: grayscale(100%) contrast(150%);
+	.logo-text {
+		font-size: 18px;
+		font-weight: bold;
+		color: #000;
+		border: 2px solid #000;
+		padding: 4px 8px;
+		text-align: center;
 	}
 
 	/* Hero-Item für TRMNL */

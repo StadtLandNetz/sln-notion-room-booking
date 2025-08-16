@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { BookingItem } from '$lib/notion';
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+	import QRCode from 'qrcode';
 
 	let { data }: { data: PageData } = $props();
 
@@ -13,6 +15,25 @@
 
 	// Aktuelle Zeit für verbleibende Zeit-Berechnung
 	const now = new Date();
+
+	// QR Code
+	let qrCodeDataURL = $state<string>('');
+	const bookingUrl = `${baseUrl}/${roomParam}/booking`;
+
+	onMount(async () => {
+		try {
+			qrCodeDataURL = await QRCode.toDataURL(bookingUrl, {
+				width: 150,
+				margin: 2,
+				color: {
+					dark: '#000000',
+					light: '#FFFFFF'
+				}
+			});
+		} catch (error) {
+			console.error('QR Code generation failed:', error);
+		}
+	});
 
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
 		const diff = to.getTime() - currentNow.getTime();
@@ -77,9 +98,7 @@
 			})} Uhr
 		</p>
 	</div>
-	<div
-		style="font-size: 18px; font-weight: bold; color: #000; padding: 4px 8px; text-align: center;"
-	>
+	<div style="display: flex; align-items: center; gap: 15px;">
 		<img
 			class="logo"
 			style="text-align: right; width:50px;"
@@ -142,7 +161,7 @@
 	{/if}
 
 	<!-- Weitere Meetingen als Liste -->
-	<div style="">
+	<div style="width: 80%; float: left;">
 		<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
 		{#each currentItems.slice(1) as item}
 			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
@@ -166,11 +185,22 @@
 				</div>
 			</div>
 		{/each}
-		
+
 		<!-- Info wenn aktueller Termin läuft aber keine weiteren Termine anstehen -->
 		{#if currentItems.length > 0 && futureItems.length === 0}
-			<div style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;">
+			<div
+				style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;"
+			>
 				FREE after current meeting ends
+			</div>
+		{/if}
+	</div>
+	<div style="width: 20%; float: left; padding: 20px;">
+		<!-- QR Code für Booking -->
+		{#if qrCodeDataURL}
+			<div style="text-align: center;">
+				<img src={qrCodeDataURL} alt="Booking QR Code" style=" border: 2px solid #ccc;" />
+				<div style="font-size: 10px; color: #666; margin-top: 2px;">BOOK ROOM</div>
 			</div>
 		{/if}
 	</div>

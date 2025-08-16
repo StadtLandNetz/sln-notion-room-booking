@@ -21,7 +21,12 @@
 	}
 
 	function formatTime(date: Date): string {
-		return date.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' });
+		return date.toLocaleTimeString('de-DE', {
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false,
+			timeZone: 'Europe/Berlin'
+		});
 	}
 
 	function calculateFreeTime(items: BookingItem[], currentNow: Date): number {
@@ -63,7 +68,13 @@
 			SLN Office - {room?.room || roomParam}
 		</h1>
 		<p style="font-size: 14px; color: #666; margin: 0;">
-			{now.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} Uhr
+			{now.toLocaleTimeString('de-DE', {
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false,
+				timeZone: 'Europe/Berlin'
+			})} Uhr
 		</p>
 	</div>
 	<div
@@ -91,8 +102,10 @@
 	<!-- Aktueller Termin läuft -->
 	{#if currentItems.length > 0}
 		{@const firstItem = currentItems[0]}
-		<div style="background: #000; color: #fff; padding: 20px;  text-align: center;display: flex;">
-			<div style="width: 50%; float: left; text-align: left; font-size: 85px;">OCCUPIED</div>
+		<div
+			style="background: #000; color: #fff; padding: 20px;  text-align: center;display: flex; align-items: center;"
+		>
+			<div style="width: 50%; float: left; text-align: left; font-size: 65px; ">OCCUPIED</div>
 			<div
 				style="width: 50%; float: left; text-align: left; border-left: 1px solid #fff; padding-left: 50px;"
 			>
@@ -100,9 +113,10 @@
 					<span style="font-size: 55px;">{calculateRemainingTime(firstItem.to, now)}min</span> remain
 				</div>
 				<div style="font-size: 18px; margin-bottom: 8px;">
-					{formatTime(firstItem.from)} - {formatTime(firstItem.to)} Uhr:
-					{firstItem.title || 'Meeting'}<br />
+					{formatTime(firstItem.from)} - {formatTime(firstItem.to)} Uhr |
 					{firstItem.user.join(', ')}
+					<br />
+					{firstItem.title || 'Meeting'}
 				</div>
 			</div>
 		</div>
@@ -119,16 +133,16 @@
 			<div style="width: 70%;float: left; border-left: 1px solid #fff; padding-left: 50px;">
 				<div style="font-size: 24px; margin-bottom: 8px; text-align: left; ">
 					<span style="font-size: 16px;"><strong>Upcoming:</strong></span> <br />
-					{formatTime(nextItem.from)} - {formatTime(nextItem.to)} Uhr<br />
-					{nextItem.title || 'Meeting'}<br />
-					{nextItem.user.join(', ')}
+					{formatTime(nextItem.from)} - {formatTime(nextItem.to)} Uhr | {nextItem.user.join(', ')}
+					<br />
+					{nextItem.title || 'Meeting'}
 				</div>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Weitere Meetingen als Liste -->
-	<div style="margin: 20px 0;">
+	<div style="">
 		<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
 		{#each currentItems.slice(1) as item}
 			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
@@ -152,5 +166,12 @@
 				</div>
 			</div>
 		{/each}
+		
+		<!-- Info wenn aktueller Termin läuft aber keine weiteren Termine anstehen -->
+		{#if currentItems.length > 0 && futureItems.length === 0}
+			<div style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;">
+				FREE after current meeting ends
+			</div>
+		{/if}
 	</div>
 {/if}

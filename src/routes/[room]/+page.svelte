@@ -14,10 +14,12 @@
 
 	let now = new Date();
 
-	let timeString = now.toLocaleTimeString('de', {
+	let timeString = now.toLocaleTimeString('de-DE', {
 		hour: '2-digit',
 		minute: '2-digit',
-		second: '2-digit'
+		second: '2-digit',
+		hour12: false,
+		timeZone: 'Europe/Berlin'
 	});
 
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
@@ -33,10 +35,12 @@
 		// refresh time every second
 		const intervalClock = setInterval(() => {
 			now = new Date();
-			timeString = now.toLocaleTimeString('de', {
+			timeString = now.toLocaleTimeString('de-DE', {
 				hour: '2-digit',
 				minute: '2-digit',
-				second: '2-digit'
+				second: '2-digit',
+				hour12: false,
+				timeZone: 'Europe/Berlin'
 			});
 		}, 1000);
 
@@ -76,7 +80,7 @@
 				<div class="item-details">
 					<div class="item-info">
 						<div class="time-range">
-							{firstItem.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} - {firstItem.to.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+							{firstItem.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} - {firstItem.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
 						</div>
 						<div class="item-title">
 							{firstItem.title || 'Buchung'}
@@ -111,10 +115,10 @@
 					<tr class="current">
 						<td><span class="status-current">{item.user.join(', ')}</span></td>
 						<td>
-							{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+							{item.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
 						</td>
 						<td>
-							{item.to.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+							{item.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
 						</td>
 						<td>{calculateRemainingTime(item.to, now)}</td>
 					</tr>
@@ -125,10 +129,10 @@
 					<tr class="future">
 						<td><span class="status-future">{item.user.join(', ')}</span></td>
 						<td>
-							{item.from.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+							{item.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
 						</td>
 						<td>
-							{item.to.toLocaleTimeString('de', { hour: '2-digit', minute: '2-digit' })} Uhr
+							{item.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
 						</td>
 						<td>{item.duration}</td>
 					</tr>

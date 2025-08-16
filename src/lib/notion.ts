@@ -87,6 +87,8 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 					page.properties?.Person?.type === 'people' ? page.properties.Person.people : [];
 				const durationProperty =
 					page.properties?.Duration?.type === 'formula' ? page.properties.Duration.formula : null;
+				const titleProperty =
+					page.properties?.Title?.type === 'title' ? page.properties.Title.title : [];
 				
 				// Extrahiere die Werte:
 				const room = roomProperty?.name ?? '';
@@ -115,6 +117,12 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 						? durationProperty.string
 						: '';
 
+				// "Title"-Property
+				const title = titleProperty
+					.map((text) => text.plain_text)
+					.join('')
+					.trim();
+
 				// RESULT
 				const bookingItem: BookingItem = {
 					room,
@@ -122,7 +130,8 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 					from,
 					to,
 					user,
-					duration
+					duration,
+					title: title || undefined
 				};
 
 				return bookingItem;

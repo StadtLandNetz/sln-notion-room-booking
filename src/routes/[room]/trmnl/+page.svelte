@@ -141,7 +141,7 @@
 	{/if}
 
 	<!-- Weitere Meetingen als Liste -->
-	<div style="width: 80%; float: left;">
+	<div style="width: 70%; float: left;">
 		<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
 		{#each currentItems.slice(1) as item}
 			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
@@ -175,10 +175,10 @@
 			</div>
 		{/if}
 	</div>
-	<div style="width: 20%; float: left; padding: 20px;">
+	<div style="width: 25%; float: right; padding: 20px;">
 		<!-- QR Code für Booking -->
 		{#if qrCodeDataURL}
-			<div style="text-align: center; width: 100px;">
+			<div style="text-align:center;float: right; width: 100px;">
 				<img src={qrCodeDataURL} alt="Booking QR Code" style=" border: 2px solid #ccc;" />
 				<div style="font-size: 10px; color: #666; margin-top: 2px;">BOOK ROOM</div>
 			</div>

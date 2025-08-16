@@ -178,7 +178,7 @@
 	<div style="width: 20%; float: left; padding: 20px;">
 		<!-- QR Code für Booking -->
 		{#if qrCodeDataURL}
-			<div style="text-align: center;">
+			<div style="text-align: center; width: 100px;">
 				<img src={qrCodeDataURL} alt="Booking QR Code" style=" border: 2px solid #ccc;" />
 				<div style="font-size: 10px; color: #666; margin-top: 2px;">BOOK ROOM</div>
 			</div>

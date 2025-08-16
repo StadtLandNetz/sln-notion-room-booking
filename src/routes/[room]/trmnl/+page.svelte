@@ -175,10 +175,10 @@
 			</div>
 		{/if}
 	</div>
-	<div style="width: 25%; float: right; padding: 20px;">
+	<div style="width: 25%; float: left; padding: 20px;">
 		<!-- QR Code für Booking -->
 		{#if qrCodeDataURL}
-			<div style="text-align:center;float: right; width: 100px;">
+			<div style="text-align:center;float: left; width: 100px;">
 				<img src={qrCodeDataURL} alt="Booking QR Code" style=" border: 2px solid #ccc;" />
 				<div style="font-size: 10px; color: #666; margin-top: 2px;">BOOK ROOM</div>
 			</div>

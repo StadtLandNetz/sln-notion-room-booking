@@ -140,48 +140,58 @@
 		</div>
 	{/if}
 
-	<!-- Weitere Meetingen als Liste -->
-	<div style="width: 70%; float: left;">
-		<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
-		{#each currentItems.slice(1) as item}
-			<div style="background: #000; color: #fff; padding: 8px; margin-bottom: 4px;">
-				<div style="font-weight: bold; font-size: 14px;">■ AKTIV: {item.user.join(', ')}</div>
-				<div>VON {formatTime(item.from)} Uhr BIS {formatTime(item.to)} Uhr</div>
-				<div>NOCH {calculateRemainingTime(item.to, now)}</div>
-			</div>
-		{/each}
-
-		<!-- Zukünftige Meetingen (ohne erste, falls sie im Hero angezeigt wird) -->
-		{#each currentItems.length > 0 ? futureItems : futureItems.slice(1) as item}
-			<div style="color: #333; padding: 8px 0; border-bottom: 2px solid #ccc;">
-				<div style="font-size: 18px; margin-left: 10px;">
-					📅 <strong>in {calculateMinutesUntil(item.from, now)} min</strong> for {item.duration ||
+	<!-- Container für Liste und QR Code -->
+	<div style="display: flex; width: 100%;">
+		<!-- Weitere Meetingen als Liste -->
+		<div style="flex: 1; margin-right: 20px;">
+			<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
+			{#each currentItems.slice(1) as item}
+				<div style="background: #6b6b6b; color: #fff; padding: 8px; margin-bottom: 4px;">
+					📅 <strong>UPCOMING in {calculateMinutesUntil(item.from, now)} min</strong> for {item.duration ||
 						calculateDuration(item.from, item.to)}
 					| {item.title || 'Meeting'}
+					<div style="margin-left: 22px; font-size: 14px;">
+						{formatTime(item.from)} Uhr - {formatTime(item.to)} Uhr | {item.user.join(', ')}
+					</div>
 				</div>
-				<div style="margin-left: 33px; font-size: 14px;">
-					{formatTime(item.from)} Uhr - {formatTime(item.to)} Uhr | {item.user.join(', ')}
-					<br />
-				</div>
-			</div>
-		{/each}
+			{/each}
 
-		<!-- Info wenn aktueller Termin läuft aber keine weiteren Termine anstehen -->
-		{#if currentItems.length > 0 && futureItems.length === 0}
-			<div
-				style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;"
-			>
-				FREE after current meeting ends
-			</div>
-		{/if}
-	</div>
-	<div style="width: 25%; float: left; padding: 20px;">
-		<!-- QR Code für Booking -->
-		{#if qrCodeDataURL}
-			<div style="text-align:center;float: left; width: 100px;">
-				<img src={qrCodeDataURL} alt="Booking QR Code" style=" border: 2px solid #ccc;" />
-				<div style="font-size: 10px; color: #666; margin-top: 2px;">BOOK ROOM</div>
-			</div>
-		{/if}
+			<!-- Zukünftige Meetingen (ohne erste, falls sie im Hero angezeigt wird) -->
+			{#each currentItems.length > 0 ? futureItems : futureItems.slice(1) as item}
+				<div style="color: #333; padding: 8px 0; border-bottom: 2px solid #ccc;">
+					<div style="font-size: 18px; margin-left: 10px;">
+						📅 <strong>in {calculateMinutesUntil(item.from, now)} min</strong> for {item.duration ||
+							calculateDuration(item.from, item.to)}
+						| {item.title || 'Meeting'}
+					</div>
+					<div style="margin-left: 33px; font-size: 14px;">
+						{formatTime(item.from)} Uhr - {formatTime(item.to)} Uhr | {item.user.join(', ')}
+					</div>
+				</div>
+			{/each}
+
+			<!-- Info wenn aktueller Termin läuft aber keine weiteren Termine anstehen -->
+			{#if currentItems.length > 0 && futureItems.length === 0}
+				<div
+					style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;"
+				>
+					FREE after current meeting ends
+				</div>
+			{/if}
+		</div>
+
+		<!-- QR Code rechts -->
+		<div style="flex-shrink: 0; width: 150px; text-align: center; padding: 20px;">
+			{#if qrCodeDataURL}
+				<img
+					src={qrCodeDataURL}
+					alt="Booking QR Code"
+					style="border: 2px solid #ccc; width: 120px; height: 120px;"
+				/>
+				<div style="font-size: 12px; color: #666; margin-top: 5px; font-weight: bold;">
+					BOOK ROOM
+				</div>
+			{/if}
+		</div>
 	</div>
 {/if}

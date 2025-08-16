@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { BookingItem } from '$lib/notion';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
-	import QRCode from 'qrcode';
 
 	let { data }: { data: PageData } = $props();
 
@@ -12,28 +10,10 @@
 	const room = data.room;
 	const roomParam = data.roomParam;
 	const baseUrl = data.baseUrl;
+	const qrCodeDataURL = data.qrCodeDataURL;
 
 	// Aktuelle Zeit für verbleibende Zeit-Berechnung
 	const now = new Date();
-
-	// QR Code
-	let qrCodeDataURL = $state<string>('');
-	const bookingUrl = `${baseUrl}/${roomParam}/booking`;
-
-	onMount(async () => {
-		try {
-			qrCodeDataURL = await QRCode.toDataURL(bookingUrl, {
-				width: 150,
-				margin: 2,
-				color: {
-					dark: '#000000',
-					light: '#FFFFFF'
-				}
-			});
-		} catch (error) {
-			console.error('QR Code generation failed:', error);
-		}
-	});
 
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
 		const diff = to.getTime() - currentNow.getTime();

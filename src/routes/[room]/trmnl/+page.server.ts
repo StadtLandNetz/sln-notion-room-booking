@@ -7,6 +7,7 @@ import {
 	type Room
 } from '$lib/notion';
 import type { PageServerLoad } from './$types';
+import QRCode from 'qrcode';
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const roomParam: string = params.room;
@@ -32,11 +33,29 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	// Für TRMNL absolute URLs erstellen
 	const baseUrl = url.origin;
 
+	// QR Code server-seitig generieren
+	const bookingUrl = `${baseUrl}/${roomParam}/booking`;
+	let qrCodeDataURL = '';
+	
+	try {
+		qrCodeDataURL = await QRCode.toDataURL(bookingUrl, {
+			width: 150,
+			margin: 2,
+			color: {
+				dark: '#000000',
+				light: '#FFFFFF'
+			}
+		});
+	} catch (error) {
+		console.error('QR Code generation failed:', error);
+	}
+
 	return {
 		room,
 		roomParam,
 		currentItems,
 		futureItems,
-		baseUrl
+		baseUrl,
+		qrCodeDataURL
 	};
 };

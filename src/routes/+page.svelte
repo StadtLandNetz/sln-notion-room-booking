@@ -180,7 +180,7 @@
 		opacity: 1;
 	}
 	table {
-		width: 900;
+		width: 900px;
 		max-width: 100%;
 		margin: 0 auto;
 		border-collapse: collapse;

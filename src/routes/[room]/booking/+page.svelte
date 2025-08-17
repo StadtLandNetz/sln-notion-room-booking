@@ -263,7 +263,7 @@
 					{#if isBooking}
 						Booking...
 					{:else}
-						Book {bookingOptions.find((opt) => opt.duration === selectedDuration)?.label ||
+						Book {bookingOptions.find((opt) => opt.duration === Number(selectedDuration))?.label ||
 							selectedDuration + ' min'}
 					{/if}
 				</button>
@@ -450,13 +450,9 @@
 		cursor: pointer;
 	}
 
-	.duration-option.disabled {
-		cursor: not-allowed;
-		opacity: 0.5;
-	}
 
 	.duration-card {
-		border: 2px solid #ddd;
+		border: 2px solid #007bff;
 		border-radius: 8px;
 		padding: 15px;
 		text-align: center;
@@ -507,12 +503,6 @@
 	input:checked + .duration-card .duration-end,
 	input:checked + .duration-card .duration-details {
 		color: #fff;
-	}
-
-	.not-available {
-		color: #c33;
-		font-size: 12px;
-		margin-top: 5px;
 	}
 
 	.title-section {

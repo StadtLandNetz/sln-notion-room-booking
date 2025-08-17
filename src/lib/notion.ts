@@ -265,17 +265,34 @@ export async function endMeeting(pageId: string, startTime: Date): Promise<void>
 	}
 
 	const now = new Date();
-
-	// Update der Notion-Seite: setze das End-Datum auf jetzt, behalte Start-Datum
-	await notion.pages.update({
-		page_id: pageId,
-		properties: {
-			Slot: {
-				date: {
-					start: startTime.toISOString(),
-					end: now.toISOString()
+	
+	// Prüfe ob das neue End-Datum nach dem Start-Datum liegt
+	if (now <= startTime) {
+		// Setze End-Datum auf 1 Minute nach Start-Datum
+		const endTime = new Date(startTime.getTime() + 60 * 1000);
+		await notion.pages.update({
+			page_id: pageId,
+			properties: {
+				Slot: {
+					date: {
+						start: startTime.toISOString(),
+						end: endTime.toISOString()
+					}
 				}
 			}
-		}
-	});
+		});
+	} else {
+		// Normal: setze End-Datum auf jetzt
+		await notion.pages.update({
+			page_id: pageId,
+			properties: {
+				Slot: {
+					date: {
+						start: startTime.toISOString(),
+						end: now.toISOString()
+					}
+				}
+			}
+		});
+	}
 }

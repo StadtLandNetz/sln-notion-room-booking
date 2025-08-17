@@ -66,7 +66,6 @@
 	{#if !room}
 		<div class="error">
 			<p>Room "{roomParam}" nicht gefunden.</p>
-			<a href="/">← Zurück zur Übersicht</a>
 		</div>
 	{:else}
 		<!-- Erstes aktuelles Item - große Darstellung -->
@@ -79,7 +78,17 @@
 				<div class="item-details">
 					<div class="item-info">
 						<div class="time-range">
-							{firstItem.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} - {firstItem.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
+							{firstItem.from.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} - {firstItem.to.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} Uhr
 						</div>
 						<div class="item-title">
 							{firstItem.title || 'Buchung'}
@@ -114,10 +123,20 @@
 					<tr class="current">
 						<td><span class="status-current">{item.user.join(', ')}</span></td>
 						<td>
-							{item.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
+							{item.from.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} Uhr
 						</td>
 						<td>
-							{item.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
+							{item.to.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} Uhr
 						</td>
 						<td>{calculateRemainingTime(item.to, now)}</td>
 					</tr>
@@ -128,10 +147,20 @@
 					<tr class="future">
 						<td><span class="status-future">{item.user.join(', ')}</span></td>
 						<td>
-							{item.from.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
+							{item.from.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} Uhr
 						</td>
 						<td>
-							{item.to.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Berlin' })} Uhr
+							{item.to.toLocaleTimeString('de-DE', {
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: false,
+								timeZone: 'Europe/Berlin'
+							})} Uhr
 						</td>
 						<td>{item.duration}</td>
 					</tr>
@@ -146,6 +175,11 @@
 				</tr>
 			</tfoot>
 		</table>
+		<!-- Booking Button -->
+		<div class="booking-button-section">
+			<a href="/{roomParam}/booking" class="booking-btn"> 📅 Book Room </a>
+		</div>
+		<a href="/">← Zurück zur Übersicht</a>
 	{/if}
 </div>
 
@@ -166,6 +200,31 @@
 	.error a {
 		color: #007bff;
 		text-decoration: none;
+	}
+
+	.booking-button-section {
+		text-align: center;
+		margin: 20px 0;
+	}
+
+	.booking-btn {
+		display: inline-block;
+		padding: 10px 20px;
+		background: #f8f9fa;
+		color: #6c757d;
+		text-decoration: none;
+		border-radius: 6px;
+		font-size: 14px;
+		font-weight: normal;
+		transition: all 0.2s ease;
+		border: 1px solid #dee2e6;
+		cursor: pointer;
+	}
+
+	.booking-btn:hover {
+		background: #e9ecef;
+		color: #495057;
+		border-color: #ced4da;
 	}
 	table {
 		width: 100%;
@@ -198,7 +257,7 @@
 		width: 64px;
 		float: right;
 	}
-	
+
 	/* Hero-Darstellung für das erste aktuelle Item */
 	.first-item-hero {
 		background: linear-gradient(135deg, #1f9012, #2db31d);
@@ -211,7 +270,7 @@
 		gap: 30px;
 		box-shadow: 0 4px 12px rgba(31, 144, 18, 0.3);
 	}
-	
+
 	.time-remaining {
 		font-size: 48px;
 		font-weight: bold;
@@ -220,7 +279,7 @@
 		flex-shrink: 0;
 		min-width: 200px;
 	}
-	
+
 	.item-details {
 		flex: 1;
 		display: flex;
@@ -228,31 +287,31 @@
 		align-items: flex-start;
 		gap: 20px;
 	}
-	
+
 	.item-info {
 		flex: 1;
 	}
-	
+
 	.time-range {
 		font-size: 16px;
 		opacity: 0.9;
 		margin-bottom: 8px;
 		font-weight: 500;
 	}
-	
+
 	.item-title {
 		font-size: 20px;
 		font-weight: 600;
 		margin-bottom: 4px;
 	}
-	
+
 	.item-user {
 		font-size: 24px;
 		font-weight: bold;
 		text-align: right;
 		flex-shrink: 0;
 	}
-	
+
 	/* Responsive für Hero-Item */
 	@media (max-width: 768px) {
 		.first-item-hero {
@@ -261,18 +320,18 @@
 			padding: 20px;
 			gap: 20px;
 		}
-		
+
 		.time-remaining {
 			font-size: 36px;
 			min-width: auto;
 		}
-		
+
 		.item-details {
 			flex-direction: column;
 			gap: 15px;
 			text-align: center;
 		}
-		
+
 		.item-user {
 			text-align: center;
 			font-size: 20px;

@@ -13,6 +13,7 @@ const notion = new Client({
 });
 
 export type BookingItem = {
+	id?: string; // Notion Page ID
 	room: string;
 	roomUUID: string;
 	from: Date;
@@ -125,6 +126,7 @@ export function mapBookingItems(notionResults: PageObjectResponse[]): BookingIte
 
 				// RESULT
 				const bookingItem: BookingItem = {
+					id: page.id,
 					room,
 					roomUUID,
 					from,
@@ -255,4 +257,25 @@ export async function createBooking(data: BookingItem): Promise<NotionBookedItem
 	}
 
 	return responseItem;
+}
+
+export async function endMeeting(pageId: string, startTime: Date): Promise<void> {
+	if (!pageId) {
+		throw new Error('Page ID ist erforderlich.');
+	}
+
+	const now = new Date();
+
+	// Update der Notion-Seite: setze das End-Datum auf jetzt, behalte Start-Datum
+	await notion.pages.update({
+		page_id: pageId,
+		properties: {
+			Slot: {
+				date: {
+					start: startTime.toISOString(),
+					end: now.toISOString()
+				}
+			}
+		}
+	});
 }

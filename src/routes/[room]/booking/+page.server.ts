@@ -65,6 +65,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const duration = data.get('duration') as string;
 		const title = data.get('title') as string;
+		const bookAfterCurrent = data.get('bookAfterCurrent') === 'true';
 		
 		if (!duration || !title) {
 			return fail(400, { message: 'Duration and title are required' });
@@ -93,16 +94,35 @@ export const actions: Actions = {
 		}
 
 		// Berechne Start- und Endzeit
-		const now = new Date();
-		const startTime = new Date(now.getTime() + 2 * 60 * 1000); // 2 Minuten Puffer
+		let startTime: Date;
 		const durationMinutes = parseInt(duration);
+		
+		if (bookAfterCurrent && currentItems.length > 0) {
+			// Buchung nach aktuellem Meeting
+			startTime = currentItems[0].to; // Beginnt wenn aktuelles Meeting endet
+		} else {
+			// Sofortige Buchung
+			const now = new Date();
+			startTime = new Date(now.getTime() + 2 * 60 * 1000); // 2 Minuten Puffer
+		}
+		
 		const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
 		// Prüfe Verfügbarkeit
-		if (!isTimeSlotAvailable(startTime, endTime, currentItems, futureItems)) {
-			return fail(409, { 
-				message: `Room is not available for ${duration} minutes. Please check the schedule.`
-			});
+		if (bookAfterCurrent) {
+			// Nur gegen zukünftige Meetings prüfen
+			if (!isTimeSlotAvailable(startTime, endTime, [], futureItems)) {
+				return fail(409, { 
+					message: `Time slot after current meeting is not available for ${duration} minutes.`
+				});
+			}
+		} else {
+			// Normal prüfen
+			if (!isTimeSlotAvailable(startTime, endTime, currentItems, futureItems)) {
+				return fail(409, { 
+					message: `Room is not available for ${duration} minutes. Please check the schedule.`
+				});
+			}
 		}
 
 		try {

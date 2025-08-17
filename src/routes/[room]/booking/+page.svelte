@@ -12,37 +12,80 @@
 	const roomParam = data.roomParam;
 
 	let selectedDuration = $state<string>('');
-	let customTitle = $state<string>('');
+	let customTitle = $state<string>('Spontaneous meeting');
 	let isBooking = $state<boolean>(false);
+	let isEndingMeeting = $state<boolean>(false);
+	let bookAfterCurrent = $state<boolean>(false);
 
 	// Verfügbarkeit für verschiedene Zeiträume prüfen
 	function checkAvailability(durationMinutes: number): boolean {
 		const now = new Date();
 		const startTime = new Date(now.getTime() + 2 * 60 * 1000); // 2 Minuten Puffer
 		const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
-		
+
 		const allItems = [...currentItems, ...futureItems];
-		
+
 		for (const item of allItems) {
 			if (startTime < item.to && endTime > item.from) {
 				return false; // Überschneidung
 			}
 		}
-		
+
+		return true;
+	}
+
+	// Prüft ob das aktuelle Meeting in den nächsten 60 Minuten endet
+	function canBookAfterCurrentMeeting(): boolean {
+		if (currentItems.length === 0) return false;
+
+		const now = new Date();
+		const currentMeetingEnd = currentItems[0].to;
+		const in60Minutes = new Date(now.getTime() + 60 * 60 * 1000);
+
+		return currentMeetingEnd <= in60Minutes;
+	}
+
+	// Verfügbarkeit für Buchung NACH dem aktuellen Meeting prüfen
+	function checkAvailabilityAfterCurrent(durationMinutes: number): boolean {
+		if (currentItems.length === 0) return false;
+
+		const currentMeetingEnd = currentItems[0].to;
+		const startTime = currentMeetingEnd; // Direkt nach aktuellem Meeting
+		const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+
+		// Prüfe gegen zukünftige Meetings
+		for (const item of futureItems) {
+			if (startTime < item.to && endTime > item.from) {
+				return false; // Überschneidung
+			}
+		}
+
 		return true;
 	}
 
 	// Buchungsoptionen
-	const bookingOptions = [
-		{ duration: 30, label: '30 min', available: checkAvailability(30) },
-		{ duration: 60, label: '1 hrs', available: checkAvailability(60) },
-		{ duration: 90, label: '1,5 hrs', available: checkAvailability(90) }
-	];
+	function getBookingOptions() {
+		const baseOptions = [
+			{ duration: 30, label: '30 min' },
+			{ duration: 60, label: '1 hrs' },
+			{ duration: 90, label: '1,5 hrs' }
+		];
+
+		const canBookAfter = canBookAfterCurrentMeeting();
+
+		return baseOptions.map((option) => ({
+			...option,
+			available: checkAvailability(option.duration),
+			availableAfterCurrent: canBookAfter ? checkAvailabilityAfterCurrent(option.duration) : false
+		}));
+	}
+
+	const bookingOptions = $derived(getBookingOptions());
 
 	function formatTime(date: Date): string {
-		return date.toLocaleTimeString('de-DE', { 
-			hour: '2-digit', 
-			minute: '2-digit', 
+		return date.toLocaleTimeString('de-DE', {
+			hour: '2-digit',
+			minute: '2-digit',
 			hour12: false,
 			timeZone: 'Europe/Berlin'
 		});
@@ -55,8 +98,48 @@
 		return formatTime(endTime);
 	}
 
+	function getEndTimeAfterCurrent(durationMinutes: number): string {
+		if (currentItems.length === 0) return '';
+		const startTime = currentItems[0].to;
+		const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+		return formatTime(endTime);
+	}
+
 	function handleCancel() {
 		goto(`/${roomParam}`);
+	}
+
+	async function handleEndMeeting() {
+		if (!currentItems[0]?.id) return;
+
+		isEndingMeeting = true;
+
+		try {
+			const response = await fetch(`/api/${roomParam}/end`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					pageId: currentItems[0].id,
+					startTime: currentItems[0].from.toISOString()
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				// Zurück zur Raum-Übersicht
+				goto(`/${roomParam}`);
+			} else {
+				alert('Fehler beim Beenden des Meetings: ' + result.error);
+			}
+		} catch (error) {
+			console.error('Fehler beim Beenden des Meetings:', error);
+			alert('Fehler beim Beenden des Meetings');
+		} finally {
+			isEndingMeeting = false;
+		}
 	}
 </script>
 
@@ -78,10 +161,114 @@
 	{:else}
 		<!-- Error/Success Messages -->
 		{#if form?.message}
-			<div class="message {form.message.includes('Failed') || form.message.includes('not available') ? 'error' : 'success'}">
+			<div
+				class="message {form.message.includes('Failed') || form.message.includes('not available')
+					? 'error'
+					: 'success'}"
+			>
 				{form.message}
 			</div>
 		{/if}
+
+		<!-- Quick Booking Section -->
+		<div class="booking-section">
+			<h2>Quick Booking</h2>
+
+			{#if currentItems.length === 0}
+				<p>Book this room starting in 2 minutes:</p>
+			{:else if canBookAfterCurrentMeeting()}
+				<p>Room is occupied. Choose booking option:</p>
+			{:else}
+				<p>Room is occupied for more than 1 hour. Try again later.</p>
+			{/if}
+
+			<form
+				method="POST"
+				action="?/book"
+				use:enhance={() => {
+					isBooking = true;
+					return async ({ update }) => {
+						await update();
+						isBooking = false;
+					};
+				}}
+			>
+				<!-- Duration Selection -->
+				<div class="duration-grid">
+					{#each bookingOptions as option}
+						<!-- Immediate booking option (wenn room frei oder nicht verfügbar) -->
+						{#if currentItems.length === 0 && option.available}
+							<label class="duration-option">
+								<input
+									type="radio"
+									name="duration"
+									value={option.duration}
+									bind:group={selectedDuration}
+									disabled={isBooking}
+									onchange={() => (bookAfterCurrent = false)}
+								/>
+								<div class="duration-card">
+									<div class="duration-time">{option.label}</div>
+									<div class="duration-end">Until {getEndTime(option.duration)} Uhr</div>
+								</div>
+							</label>
+						{/if}
+
+						<!-- After current meeting option -->
+						{#if currentItems.length > 0 && canBookAfterCurrentMeeting() && option.availableAfterCurrent}
+							<label class="duration-option after-current">
+								<input
+									type="radio"
+									name="duration"
+									value={option.duration}
+									bind:group={selectedDuration}
+									disabled={isBooking}
+									onchange={() => (bookAfterCurrent = true)}
+								/>
+								<div class="duration-card">
+									<div class="duration-time">{option.label}</div>
+									<div class="duration-end">After current meeting</div>
+									<div class="duration-details">
+										{formatTime(currentItems[0].to)} - {getEndTimeAfterCurrent(option.duration)} Uhr
+									</div>
+								</div>
+							</label>
+						{/if}
+					{/each}
+				</div>
+
+				<!-- Hidden field for after current booking flag -->
+				<input type="hidden" name="bookAfterCurrent" value={bookAfterCurrent} />
+
+				<!-- Title Input -->
+				<div class="title-section">
+					<label for="title">Meeting Title:</label>
+					<input
+						type="text"
+						name="title"
+						id="title"
+						bind:value={customTitle}
+						placeholder="Enter meeting title..."
+						required
+						disabled={isBooking}
+					/>
+				</div>
+
+				<!-- Submit Button -->
+				<button
+					type="submit"
+					class="book-btn"
+					disabled={!selectedDuration || !customTitle || isBooking}
+				>
+					{#if isBooking}
+						Booking...
+					{:else}
+						Book {bookingOptions.find((opt) => opt.duration === selectedDuration)?.label ||
+							selectedDuration + ' min'}
+					{/if}
+				</button>
+			</form>
+		</div>
 
 		<!-- Current Status -->
 		<div class="status-section">
@@ -89,79 +276,24 @@
 			{#if currentItems.length > 0}
 				<div class="status occupied">
 					<strong>OCCUPIED</strong> until {formatTime(currentItems[0].to)} Uhr
-					<br>
-					<span class="details">{currentItems[0].title || 'Meeting'} - {currentItems[0].user.join(', ')}</span>
+					<br />
+					<span class="details"
+						>{currentItems[0].title || 'Meeting'} - {currentItems[0].user.join(', ')}</span
+					>
 				</div>
+				<button class="end-meeting-btn" onclick={handleEndMeeting} disabled={isEndingMeeting}>
+					{#if isEndingMeeting}
+						Ending...
+					{:else}
+						End Meeting
+					{/if}
+				</button>
 			{:else}
 				<div class="status free">
 					<strong>FREE</strong> - Available for booking
 				</div>
 			{/if}
 		</div>
-
-		<!-- Quick Booking Section -->
-		<div class="booking-section">
-			<h2>Quick Booking</h2>
-			<p>Book this room starting in 2 minutes:</p>
-			
-			<form method="POST" action="?/book" use:enhance={() => {
-				isBooking = true;
-				return async ({ update }) => {
-					await update();
-					isBooking = false;
-				};
-			}}>
-				<!-- Duration Selection -->
-				<div class="duration-grid">
-					{#each bookingOptions as option}
-						<label class="duration-option {option.available ? '' : 'disabled'}">
-							<input 
-								type="radio" 
-								name="duration" 
-								value={option.duration} 
-								bind:group={selectedDuration}
-								disabled={!option.available || isBooking}
-							>
-							<div class="duration-card">
-								<div class="duration-time">{option.label}</div>
-								<div class="duration-end">Until {getEndTime(option.duration)} Uhr</div>
-								{#if !option.available}
-									<div class="not-available">Not Available</div>
-								{/if}
-							</div>
-						</label>
-					{/each}
-				</div>
-
-				<!-- Title Input -->
-				<div class="title-section">
-					<label for="title">Meeting Title:</label>
-					<input 
-						type="text" 
-						name="title" 
-						id="title"
-						bind:value={customTitle}
-						placeholder="Enter meeting title..."
-						required
-						disabled={isBooking}
-					>
-				</div>
-
-				<!-- Submit Button -->
-				<button 
-					type="submit" 
-					class="book-btn"
-					disabled={!selectedDuration || !customTitle || isBooking}
-				>
-					{#if isBooking}
-						Booking...
-					{:else}
-						Book {bookingOptions.find(opt => opt.duration === selectedDuration)?.label || selectedDuration + ' min'}
-					{/if}
-				</button>
-			</form>
-		</div>
-
 		<!-- Future Bookings -->
 		{#if futureItems.length > 0}
 			<div class="future-section">
@@ -173,7 +305,7 @@
 						</div>
 						<div class="item-details">
 							<strong>{item.title || 'Meeting'}</strong>
-							<br>
+							<br />
 							{item.user.join(', ')}
 						</div>
 					</div>
@@ -188,7 +320,10 @@
 		margin: 0 auto;
 		max-width: 600px;
 		padding: 20px;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.header {
@@ -252,7 +387,9 @@
 		border: 1px solid #cfc;
 	}
 
-	.status-section, .booking-section, .future-section {
+	.status-section,
+	.booking-section,
+	.future-section {
 		margin-bottom: 30px;
 		padding: 20px;
 		border: 1px solid #ddd;
@@ -266,18 +403,40 @@
 	}
 
 	.status.occupied {
-		background: #333;
-		color: white;
+		background: #fce9e9;
+		color: rgb(224, 22, 22);
 	}
 
 	.status.free {
-		background: #666;
-		color: white;
+		background: #d6fade;
+		color: rgb(20, 101, 34);
 	}
 
 	.details {
 		font-size: 14px;
 		opacity: 0.9;
+	}
+
+	.end-meeting-btn {
+		margin-top: 15px;
+		padding: 12px 24px;
+		background: #dc3545;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+		font-weight: bold;
+		cursor: pointer;
+		width: 100%;
+	}
+
+	.end-meeting-btn:disabled {
+		background: #999;
+		cursor: not-allowed;
+	}
+
+	.end-meeting-btn:not(:disabled):hover {
+		background: #c82333;
 	}
 
 	.duration-grid {
@@ -310,7 +469,8 @@
 
 	.duration-option input:checked + .duration-card {
 		border-color: #007bff;
-		background: #f0f8ff;
+		background: #007bff;
+		color: #fff;
 	}
 
 	.duration-option:not(.disabled):hover .duration-card {
@@ -326,6 +486,27 @@
 	.duration-end {
 		font-size: 14px;
 		color: #666;
+	}
+
+	.duration-details {
+		font-size: 12px;
+		color: #888;
+		margin-top: 4px;
+	}
+
+	.duration-option.after-current .duration-card {
+		border-color: #28a745;
+		background: #f8fff9;
+	}
+
+	.duration-option.after-current input:checked + .duration-card {
+		border-color: #28a745;
+		background: #28a745;
+		color: white;
+	}
+	input:checked + .duration-card .duration-end,
+	input:checked + .duration-card .duration-details {
+		color: #fff;
 	}
 
 	.not-available {

@@ -34,9 +34,9 @@
 
 	// Buchungsoptionen
 	const bookingOptions = [
-		{ duration: 30, label: '30 minutes', available: checkAvailability(30) },
-		{ duration: 60, label: '60 minutes', available: checkAvailability(60) },
-		{ duration: 90, label: '90 minutes', available: checkAvailability(90) }
+		{ duration: 30, label: '30 min', available: checkAvailability(30) },
+		{ duration: 60, label: '1 hrs', available: checkAvailability(60) },
+		{ duration: 90, label: '1,5 hrs', available: checkAvailability(90) }
 	];
 
 	function formatTime(date: Date): string {
@@ -156,7 +156,7 @@
 					{#if isBooking}
 						Booking...
 					{:else}
-						Book {selectedDuration} minutes
+						Book {bookingOptions.find(opt => opt.duration === selectedDuration)?.label || selectedDuration + ' min'}
 					{/if}
 				</button>
 			</form>

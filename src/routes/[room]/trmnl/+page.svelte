@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { BookingItem } from '$lib/notion';
 	import type { PageData } from './$types';
+	import { formatMinutes, formatTimeUntil, formatRemainingTime } from '$lib/timeUtils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -14,12 +15,6 @@
 
 	// Aktuelle Zeit für verbleibende Zeit-Berechnung
 	const now = new Date();
-
-	function calculateRemainingTime(to: Date, currentNow: Date): string {
-		const diff = to.getTime() - currentNow.getTime();
-		const minutes = Math.floor(diff / 60000);
-		return `${minutes} `;
-	}
 
 	function formatTime(date: Date): string {
 		return date.toLocaleTimeString('de-DE', {
@@ -40,18 +35,7 @@
 	function calculateDuration(from: Date, to: Date): string {
 		const diff = to.getTime() - from.getTime();
 		const minutes = Math.floor(diff / 60000);
-		if (minutes < 60) {
-			return `${minutes} min`;
-		} else {
-			const hours = Math.floor(minutes / 60);
-			const remainingMinutes = minutes % 60;
-			return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}min` : `${hours}h`;
-		}
-	}
-
-	function calculateMinutesUntil(from: Date, currentNow: Date): number {
-		const diff = from.getTime() - currentNow.getTime();
-		return Math.floor(diff / 60000);
+		return formatMinutes(minutes);
 	}
 </script>
 
@@ -94,8 +78,19 @@
 	</div>
 {:else if currentItems.length === 0 && futureItems.length === 0}
 	<!-- Komplett frei - keine Termine -->
-	<div style="background: #666; color: #fff; padding: 40px; ; text-align: center;">
+	<div style="background: #F7F8FA; color: #000; padding: 40px; ; text-align: center; ">
 		<div style="font-size: 100px; font-weight: bold;">FREE</div>
+	</div>
+	<!-- QR Code rechts -->
+	<div style="flex-shrink: 0; width: 150px; text-align: center; padding: 20px;float: right;">
+		{#if qrCodeDataURL}
+			<img
+				src={qrCodeDataURL}
+				alt="Booking QR Code"
+				style="border: 2px solid #ccc; width: 120px; height: 120px;"
+			/>
+			<div style="font-size: 12px; color: #666; margin-top: 5px; font-weight: bold;">BOOK ROOM</div>
+		{/if}
 	</div>
 {:else}
 	<!-- Aktueller Termin läuft -->
@@ -106,10 +101,10 @@
 		>
 			<div style="width: 50%; float: left; text-align: left; font-size: 65px; ">OCCUPIED</div>
 			<div
-				style="width: 50%; float: left; text-align: left; border-left: 1px solid #fff; padding-left: 50px;"
+				style="width: 50%; float: left; text-align: left; border-left: 5px solid #fff;padding-left: 50px;margin-left: 50px;"
 			>
 				<div style="font-size: 36px; font-weight: bold; margin-bottom: 10px;">
-					<span style="font-size: 55px;">{calculateRemainingTime(firstItem.to, now)}min</span> remain
+					<span style="font-size: 55px;">{formatRemainingTime(firstItem.to, now)}</span> remain
 				</div>
 				<div style="font-size: 18px; margin-bottom: 8px;">
 					{formatTime(firstItem.from)} - {formatTime(firstItem.to)} Uhr |
@@ -127,14 +122,17 @@
 			<div
 				style="font-size: 32px; font-weight: bold; margin-bottom: 10px;  text-align: left; width: 30%; float: left;"
 			>
-				<span style="font-size: 70px;">FREE</span> <br />for {freeMinutes} mins
+				<span style="font-size: 70px;">FREE</span> <br />for {formatMinutes(freeMinutes)}
 			</div>
-			<div style="width: 70%;float: left; border-left: 1px solid #fff; padding-left: 50px;">
-				<div style="font-size: 24px; margin-bottom: 8px; text-align: left; ">
-					<span style="font-size: 16px;"><strong>Upcoming:</strong></span> <br />
-					{formatTime(nextItem.from)} - {formatTime(nextItem.to)} Uhr | {nextItem.user.join(', ')}
+			<div
+				style="width: 70%;float: left; border-left: 5px solid #fff;padding-left: 50px;margin-left: 50px;"
+			>
+				<div style="font-size: 32px; margin-bottom: 8px; text-align: left; ">
+					<span style="font-size: 24px;"><strong>Upcoming:</strong></span> <br />
+					{formatTime(nextItem.from)} - {formatTime(nextItem.to)} Uhr
 					<br />
-					{nextItem.title || 'Meeting'}
+					{nextItem.user.join(', ')}
+					<br />{nextItem.title || 'Meeting'}
 				</div>
 			</div>
 		</div>
@@ -147,7 +145,7 @@
 			<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
 			{#each currentItems.slice(1) as item}
 				<div style="background: #6b6b6b; color: #fff; padding: 8px; margin-bottom: 4px;">
-					📅 <strong>UPCOMING in {calculateMinutesUntil(item.from, now)} min</strong> for {item.duration ||
+					📅 <strong>UPCOMING in {formatTimeUntil(item.from, now)}</strong> for {item.duration ||
 						calculateDuration(item.from, item.to)}
 					| {item.title || 'Meeting'}
 					<div style="margin-left: 22px; font-size: 14px;">
@@ -160,7 +158,7 @@
 			{#each currentItems.length > 0 ? futureItems : futureItems.slice(1) as item}
 				<div style="color: #333; padding: 8px 0; border-bottom: 2px solid #ccc;">
 					<div style="font-size: 18px; margin-left: 10px;">
-						📅 <strong>in {calculateMinutesUntil(item.from, now)} min</strong> for {item.duration ||
+						📅 <strong>in {formatTimeUntil(item.from, now)}</strong> for {item.duration ||
 							calculateDuration(item.from, item.to)}
 						| {item.title || 'Meeting'}
 					</div>

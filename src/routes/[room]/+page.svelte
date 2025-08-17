@@ -3,6 +3,7 @@
 	import { invalidate } from '$app/navigation';
 	import type { BookingItem } from '$lib/notion';
 	import type { PageData } from './$types';
+	import { formatRemainingTime } from '$lib/timeUtils';
 
 	export let data: PageData;
 
@@ -23,9 +24,7 @@
 	});
 
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
-		const diff = to.getTime() - currentNow.getTime();
-		const minutes = Math.floor(diff / 60000);
-		return `${minutes} min remaining`;
+		return formatRemainingTime(to, currentNow) + ' remaining';
 	}
 
 	let counter = 0;

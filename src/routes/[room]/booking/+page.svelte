@@ -4,6 +4,9 @@
 	import type { BookingItem } from '$lib/notion';
 	import type { PageData, ActionData } from './$types';
 
+	// Extended type with id for booking items
+	type BookingItemWithId = BookingItem & { id: string };
+
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const currentItems: BookingItem[] = data.currentItems;
@@ -110,7 +113,8 @@
 	}
 
 	async function handleEndMeeting() {
-		if (!currentItems[0]?.id) return;
+		const currentItem = currentItems[0] as BookingItemWithId;
+		if (!currentItem || !currentItem.id) return;
 
 		isEndingMeeting = true;
 
@@ -121,8 +125,8 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					pageId: currentItems[0].id,
-					startTime: currentItems[0].from.toISOString()
+					pageId: currentItem.id,
+					startTime: currentItem.from.toISOString()
 				})
 			});
 

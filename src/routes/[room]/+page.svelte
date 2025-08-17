@@ -197,10 +197,6 @@
 		padding: 40px;
 		color: #dc3545;
 	}
-	.error a {
-		color: #007bff;
-		text-decoration: none;
-	}
 
 	.booking-button-section {
 		text-align: center;

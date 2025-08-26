@@ -39,6 +39,22 @@
 		return formatMinutes(minutes);
 	}
 
+	function getDisplayTime(endDate: Date, currentTime: Date): string {
+		const diffMinutes = (endDate.getTime() - currentTime.getTime()) / 60000;
+		
+		if (diffMinutes <= 30) {
+			const endTimeString = endDate.toLocaleTimeString('de-DE', {
+				hour: '2-digit',
+				minute: '2-digit',
+				hour12: false,
+				timeZone: 'Europe/Berlin'
+			});
+			return `until ${endTimeString}`;
+		} else {
+			return formatRemainingTime(endDate, currentTime) + " remain"; // Show remaining time
+		}
+	}
+
 	// Color scheme based on dark mode
 	const colors = isDarkMode ? {
 		background: '#000000',
@@ -144,7 +160,7 @@
 				style="width: 50%; float: left; text-align: left; border-left: 5px solid {colors.occupiedText};padding-left: 50px;margin-left: 50px;"
 			>
 				<div style="font-size: 36px; font-weight: bold; margin-bottom: 10px;">
-					<span style="font-size: 55px;">{formatRemainingTime(firstItem.to, now)}</span> remain
+					<span style="font-size: 55px;">{getDisplayTime(firstItem.to, now)}</span>
 				</div>
 				<div style="font-size: 18px; margin-bottom: 8px;">
 					{formatTime(firstItem.from)} - {formatTime(firstItem.to)} Uhr |

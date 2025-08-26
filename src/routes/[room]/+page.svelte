@@ -27,6 +27,22 @@
 		return formatRemainingTime(to, currentNow) + ' remaining';
 	}
 
+	function getDisplayTime(endDate: Date, currentTime: Date): string {
+		const diffMinutes = (endDate.getTime() - currentTime.getTime()) / 60000;
+		
+		if (diffMinutes <= 30) {
+			const endTimeString = endDate.toLocaleTimeString('de-DE', {
+				hour: '2-digit',
+				minute: '2-digit',
+				hour12: false,
+				timeZone: 'Europe/Berlin'
+			});
+			return `until ${endTimeString}`;
+		} else {
+			return formatRemainingTime(endDate, currentTime) + " remaining";
+		}
+	}
+
 	let counter = 0;
 
 	onMount(() => {
@@ -73,7 +89,7 @@
 			{@const firstItem = currentItems[0]}
 			<div class="first-item-hero">
 				<div class="time-remaining">
-					{calculateRemainingTime(firstItem.to, now)}
+					{getDisplayTime(firstItem.to, now)}
 				</div>
 				<div class="item-details">
 					<div class="item-info">
@@ -138,7 +154,7 @@
 								timeZone: 'Europe/Berlin'
 							})} Uhr
 						</td>
-						<td>{calculateRemainingTime(item.to, now)}</td>
+						<td>{getDisplayTime(item.to, now)}</td>
 					</tr>
 				{/each}
 

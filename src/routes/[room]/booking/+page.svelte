@@ -454,7 +454,6 @@
 		cursor: pointer;
 	}
 
-
 	.duration-card {
 		border: 2px solid #007bff;
 		border-radius: 8px;

@@ -10,6 +10,7 @@
 	const futureItems: BookingItem[] = data.futureItems;
 	const rooms: Room[] = data.rooms.sort((a, b) => a.room.localeCompare(b.room));
 	const baseUrl = data.baseUrl;
+	const isDarkMode = data.isDarkMode;
 
 	// Map roomUUID -> { current: BookingItem[], future: BookingItem[] }
 	const roomItemMap: Record<string, { current: BookingItem[]; future: BookingItem[] }> = {};
@@ -34,6 +35,35 @@
 	function calculateRemainingTime(to: Date, currentNow: Date): string {
 		return formatRemainingTime(to, currentNow) + ' remaining';
 	}
+
+	// Color scheme based on dark mode
+	const colors = isDarkMode ? {
+		background: '#000000',
+		text: '#ffffff',
+		headerBg: '#333333',
+		headerText: '#ffffff',
+		roomHeaderBg: '#1a1a1a',
+		roomHeaderText: '#ffffff',
+		currentBookingBg: '#ffffff',
+		currentBookingText: '#000000',
+		futureBookingBg: '#000000',
+		futureBookingText: '#ffffff',
+		border: '#ffffff',
+		whitespace: '#000000'
+	} : {
+		background: '#ffffff',
+		text: '#000000',
+		headerBg: '#e0e0e0',
+		headerText: '#000000',
+		roomHeaderBg: '#f0f0f0',
+		roomHeaderText: '#000000',
+		currentBookingBg: '#000000',
+		currentBookingText: '#ffffff',
+		futureBookingBg: '#ffffff',
+		futureBookingText: '#000000',
+		border: '#000000',
+		whitespace: '#ffffff'
+	};
 </script>
 
 <svelte:head>
@@ -42,11 +72,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
-<div style="margin: 0 auto; max-width: 100%; padding: 8px; background-color: #ffffff; color: #000000; font-family: 'Arial', sans-serif;">
-	<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #000000; padding: 0 8px; margin-bottom: 12px;">
+<div style="margin: 0 auto; max-width: 100%; padding: 8px; background-color: {colors.background}; color: {colors.text}; font-family: 'Arial', sans-serif;">
+	<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid {colors.border}; padding: 0 8px; margin-bottom: 12px;">
 		<div>
-			<h1 style="font-size: 18px; font-weight: bold; color: #000000; margin: 0;">SLN Office</h1>
-			<p style="font-size: 12px; color: #000000; margin: 0; font-weight: bold;">{timeString} Uhr</p>
+			<h1 style="font-size: 18px; font-weight: bold; color: {colors.text}; margin: 0;">SLN Office</h1>
+			<p style="font-size: 12px; color: {colors.text}; margin: 0; font-weight: bold;">{timeString} Uhr</p>
 		</div>
 		<img
 			style="width: 35px;"
@@ -58,10 +88,10 @@
 	<table style="width: 100%; max-width: 100%; margin: 0 auto; border-collapse: collapse;">
 		<thead>
 			<tr>
-				<th style="padding: 4px 6px; width: 25%; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">User</th>
-				<th style="padding: 4px 6px; width: 25%; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Von</th>
-				<th style="padding: 4px 6px; width: 25%; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Bis</th>
-				<th style="padding: 4px 6px; width: 25%; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Dauer</th>
+				<th style="padding: 4px 6px; width: 25%; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">User</th>
+				<th style="padding: 4px 6px; width: 25%; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Von</th>
+				<th style="padding: 4px 6px; width: 25%; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Bis</th>
+				<th style="padding: 4px 6px; width: 25%; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Dauer</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -71,17 +101,17 @@
 					<!-- Whitespace row before room header (except first room) -->
 					{#if index > 0}
 						<tr>
-							<td colspan="4" style="padding: 8px; background-color: #ffffff;"> </td>
+							<td colspan="4" style="padding: 8px; background-color: {colors.whitespace};"> </td>
 						</tr>
 					{/if}
-					<tr style="border-top: 2px solid #000000;">
-						<td colspan="4" style="position: relative; padding: 2px 4px; background-color: #f0f0f0; color: #000000;">
+					<tr style="border-top: 2px solid {colors.border};">
+						<td colspan="4" style="position: relative; padding: 2px 4px; background-color: {colors.roomHeaderBg}; color: {colors.roomHeaderText};">
 							<h2 style="font-size: 11px; float: left; font-weight: bold; margin: 0;">
-								<a href="/{room.roomUUID}" style="color: #000000; text-decoration: none; cursor: pointer;">
+								<a href="/{room.roomUUID}" style="color: {colors.roomHeaderText}; text-decoration: none; cursor: pointer;">
 									{room.room}
 								</a>
 							</h2>
-							<code style="font-size: 8px; float: right; margin-top: 1px; color: #000000; font-weight: bold;">
+							<code style="font-size: 8px; float: right; margin-top: 1px; color: {colors.roomHeaderText}; font-weight: bold;">
 								{room.roomUUID}
 							</code>
 						</td>
@@ -90,13 +120,13 @@
 					<!-- Keine Items? -->
 					{#if roomItemMap[room.roomUUID].current.length === 0 && roomItemMap[room.roomUUID].future.length === 0}
 						<tr>
-							<td colspan="4" style="text-align: center; padding: 6px; background-color: #ffffff; color: #000000; font-size: 13px; font-weight: bold;">no bookings today anymore</td>
+							<td colspan="4" style="text-align: center; padding: 6px; background-color: {colors.futureBookingBg}; color: {colors.futureBookingText}; font-size: 13px; font-weight: bold;">no bookings today anymore</td>
 						</tr>
 					{/if}
 
 					<!-- Aktuelle Buchungen -->
 					{#each roomItemMap[room.roomUUID].current as item}
-						<tr style="background-color: #000000; color: #ffffff;">
+						<tr style="background-color: {colors.currentBookingBg}; color: {colors.currentBookingText};">
 							<td style="padding: 6px 8px; font-size: 14px; font-weight: bold;">
 								<span>{item.user.join(', ')}</span>
 							</td>
@@ -112,7 +142,7 @@
 
 					<!-- Zukünftige Buchungen -->
 					{#each roomItemMap[room.roomUUID].future as item}
-						<tr style="background-color: #ffffff; color: #000000;">
+						<tr style="background-color: {colors.futureBookingBg}; color: {colors.futureBookingText};">
 							<td style="padding: 6px 8px; font-size: 14px;">
 								<span>{item.user.join(', ')}</span>
 							</td>
@@ -130,10 +160,10 @@
 		</tbody>
 		<tfoot>
 			<tr>
-				<th style="padding: 4px 6px; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">User</th>
-				<th style="padding: 4px 6px; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Von</th>
-				<th style="padding: 4px 6px; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Bis</th>
-				<th style="padding: 4px 6px; background-color: #e0e0e0; color: #000000; text-align: left; font-size: 12px; font-weight: bold;">Dauer</th>
+				<th style="padding: 4px 6px; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">User</th>
+				<th style="padding: 4px 6px; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Von</th>
+				<th style="padding: 4px 6px; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Bis</th>
+				<th style="padding: 4px 6px; background-color: {colors.headerBg}; color: {colors.headerText}; text-align: left; font-size: 12px; font-weight: bold;">Dauer</th>
 			</tr>
 		</tfoot>
 	</table>

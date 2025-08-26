@@ -12,6 +12,7 @@
 	const roomParam = data.roomParam;
 	const baseUrl = data.baseUrl;
 	const qrCodeDataURL = data.qrCodeDataURL;
+	const isDarkMode = data.isDarkMode;
 
 	// Aktuelle Zeit für verbleibende Zeit-Berechnung
 	const now = new Date();
@@ -37,6 +38,43 @@
 		const minutes = Math.floor(diff / 60000);
 		return formatMinutes(minutes);
 	}
+
+	// Color scheme based on dark mode
+	const colors = isDarkMode ? {
+		background: '#000000',
+		text: '#ffffff',
+		border: '#ffffff',
+		headerBg: '#000000',
+		headerText: '#ffffff',
+		occupied: '#ffffff',
+		occupiedText: '#000000',
+		free: '#333333',
+		freeText: '#ffffff',
+		upcoming: '#333333',
+		upcomingText: '#ffffff',
+		listItemBg: '#333333',
+		listItemText: '#ffffff',
+		listBorder: '#ffffff',
+		qrBorder: '#ffffff',
+		freeAfterBg: '#333333'
+	} : {
+		background: '#ffffff',
+		text: '#000000',
+		border: '#000000',
+		headerBg: '#ffffff',
+		headerText: '#000000',
+		occupied: '#000000',
+		occupiedText: '#ffffff',
+		free: '#666666',
+		freeText: '#ffffff',
+		upcoming: '#666666',
+		upcomingText: '#ffffff',
+		listItemBg: '#6b6b6b',
+		listItemText: '#ffffff',
+		listBorder: '#cccccc',
+		qrBorder: '#cccccc',
+		freeAfterBg: '#666666'
+	};
 </script>
 
 <svelte:head>
@@ -45,14 +83,16 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
+<div style="background-color: {colors.background}; color: {colors.text}; min-height: 100vh; padding: 0; margin: 0;">
+
 <div
-	style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #CCC; padding: 0 10px;"
+	style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid {colors.border}; padding: 0 10px; background-color: {colors.headerBg};"
 >
 	<div>
-		<h1 style="font-size: 24px; font-weight: bold; color: #000; margin: 0;">
+		<h1 style="font-size: 24px; font-weight: bold; color: {colors.headerText}; margin: 0;">
 			SLN Office - {room?.room || roomParam}
 		</h1>
-		<p style="font-size: 14px; color: #666; margin: 0;">
+		<p style="font-size: 14px; color: {colors.headerText}; margin: 0; opacity: 0.8;">
 			{now.toLocaleTimeString('de-DE', {
 				hour: '2-digit',
 				minute: '2-digit',
@@ -73,12 +113,12 @@
 </div>
 
 {#if !room}
-	<div style="text-align: center; padding: 20px; border: 2px solid #000; background: #f0f0f0;">
+	<div style="text-align: center; padding: 20px; border: 2px solid {colors.border}; background: {colors.background}; color: {colors.text};">
 		<p>Raum "{roomParam}" nicht gefunden.</p>
 	</div>
 {:else if currentItems.length === 0 && futureItems.length === 0}
 	<!-- Komplett frei - keine Termine -->
-	<div style="background: #F7F8FA; color: #000; padding: 40px; ; text-align: center; ">
+	<div style="background: {colors.background}; color: {colors.text}; padding: 40px; text-align: center;">
 		<div style="font-size: 100px; font-weight: bold;">FREE</div>
 	</div>
 	<!-- QR Code rechts -->
@@ -87,9 +127,9 @@
 			<img
 				src={qrCodeDataURL}
 				alt="Booking QR Code"
-				style="border: 2px solid #ccc; width: 120px; height: 120px;"
+				style="border: 2px solid {colors.qrBorder}; width: 120px; height: 120px;"
 			/>
-			<div style="font-size: 12px; color: #666; margin-top: 5px; font-weight: bold;">BOOK ROOM</div>
+			<div style="font-size: 12px; color: {colors.text}; margin-top: 5px; font-weight: bold;">BOOK ROOM</div>
 		{/if}
 	</div>
 {:else}
@@ -97,11 +137,11 @@
 	{#if currentItems.length > 0}
 		{@const firstItem = currentItems[0]}
 		<div
-			style="background: #000; color: #fff; padding: 20px;  text-align: center;display: flex; align-items: center;"
+			style="background: {colors.occupied}; color: {colors.occupiedText}; padding: 20px; text-align: center;display: flex; align-items: center;"
 		>
 			<div style="width: 50%; float: left; text-align: left; font-size: 65px; ">OCCUPIED</div>
 			<div
-				style="width: 50%; float: left; text-align: left; border-left: 5px solid #fff;padding-left: 50px;margin-left: 50px;"
+				style="width: 50%; float: left; text-align: left; border-left: 5px solid {colors.occupiedText};padding-left: 50px;margin-left: 50px;"
 			>
 				<div style="font-size: 36px; font-weight: bold; margin-bottom: 10px;">
 					<span style="font-size: 55px;">{formatRemainingTime(firstItem.to, now)}</span> remain
@@ -118,14 +158,14 @@
 	{:else if futureItems.length > 0}
 		{@const nextItem = futureItems[0]}
 		{@const freeMinutes = calculateFreeTime(futureItems, now)}
-		<div style="background: #666; color: #fff; padding: 20px;  display: flex;">
+		<div style="background: {colors.free}; color: {colors.freeText}; padding: 20px; display: flex;">
 			<div
-				style="font-size: 32px; font-weight: bold; margin-bottom: 10px;  text-align: left; width: 30%; float: left;"
+				style="font-size: 32px; font-weight: bold; margin-bottom: 10px; text-align: left; width: 30%; float: left;"
 			>
 				<span style="font-size: 70px;">FREE</span> <br />for {formatMinutes(freeMinutes)}
 			</div>
 			<div
-				style="width: 70%;float: left; border-left: 5px solid #fff;padding-left: 50px;margin-left: 50px;"
+				style="width: 70%;float: left; border-left: 5px solid {colors.freeText};padding-left: 50px;margin-left: 50px;"
 			>
 				<div style="font-size: 32px; margin-bottom: 8px; text-align: left; ">
 					<span style="font-size: 24px;"><strong>Upcoming:</strong></span> <br />
@@ -139,12 +179,12 @@
 	{/if}
 
 	<!-- Container für Liste und QR Code -->
-	<div style="display: flex; width: 100%;">
+	<div style="display: flex; width: 100%; background-color: {colors.background};">
 		<!-- Weitere Meetingen als Liste -->
 		<div style="flex: 1; margin-right: 20px;">
 			<!-- Weitere aktuelle Meetingen (falls vorhanden) -->
 			{#each currentItems.slice(1) as item}
-				<div style="background: #6b6b6b; color: #fff; padding: 8px; margin-bottom: 4px;">
+				<div style="background: {colors.listItemBg}; color: {colors.listItemText}; padding: 8px; margin-bottom: 4px;">
 					📅 <strong>UPCOMING in {formatTimeUntil(item.from, now)}</strong> for {item.duration ||
 						calculateDuration(item.from, item.to)}
 					| {item.title || 'Meeting'}
@@ -156,7 +196,7 @@
 
 			<!-- Zukünftige Meetingen (ohne erste, falls sie im Hero angezeigt wird) -->
 			{#each currentItems.length > 0 ? futureItems : futureItems.slice(1) as item}
-				<div style="color: #333; padding: 8px 0; border-bottom: 2px solid #ccc;">
+				<div style="color: {colors.text}; padding: 8px 0; border-bottom: 2px solid {colors.listBorder};">
 					<div style="font-size: 18px; margin-left: 10px;">
 						📅 <strong>in {formatTimeUntil(item.from, now)}</strong> for {item.duration ||
 							calculateDuration(item.from, item.to)}
@@ -171,7 +211,7 @@
 			<!-- Info wenn aktueller Termin läuft aber keine weiteren Termine anstehen -->
 			{#if currentItems.length > 0 && futureItems.length === 0}
 				<div
-					style="background: #666; color: #fff; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;"
+					style="background: {colors.freeAfterBg}; color: {colors.freeText}; padding: 12px; margin-top: 10px; text-align: center; font-size: 18px; font-weight: bold;"
 				>
 					FREE after current meeting ends
 				</div>
@@ -184,12 +224,14 @@
 				<img
 					src={qrCodeDataURL}
 					alt="Booking QR Code"
-					style="border: 2px solid #ccc; width: 120px; height: 120px;"
+					style="border: 2px solid {colors.qrBorder}; width: 120px; height: 120px;"
 				/>
-				<div style="font-size: 12px; color: #666; margin-top: 5px; font-weight: bold;">
+				<div style="font-size: 12px; color: {colors.text}; margin-top: 5px; font-weight: bold;">
 					BOOK ROOM
 				</div>
 			{/if}
 		</div>
 	</div>
 {/if}
+
+</div>

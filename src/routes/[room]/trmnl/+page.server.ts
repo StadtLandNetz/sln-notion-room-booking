@@ -33,6 +33,9 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	// Für TRMNL absolute URLs erstellen
 	const baseUrl = url.origin;
 
+	// Check for dark mode parameter
+	const isDarkMode = url.searchParams.has('dark') || url.searchParams.has('darkmode');
+
 	// QR Code server-seitig generieren
 	const bookingUrl = `${baseUrl}/${roomParam}/booking`;
 	let qrCodeDataURL = '';
@@ -42,8 +45,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			width: 150,
 			margin: 2,
 			color: {
-				dark: '#000000',
-				light: '#FFFFFF'
+				dark: isDarkMode ? '#FFFFFF' : '#000000',
+				light: isDarkMode ? '#000000' : '#FFFFFF'
 			}
 		});
 	} catch (error) {
@@ -56,6 +59,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		currentItems,
 		futureItems,
 		baseUrl,
-		qrCodeDataURL
+		qrCodeDataURL,
+		isDarkMode
 	};
 };

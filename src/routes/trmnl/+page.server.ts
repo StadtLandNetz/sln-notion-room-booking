@@ -18,10 +18,14 @@ export const load: PageServerLoad = async ({ url }) => {
 	// Für TRMNL absolute URLs erstellen
 	const baseUrl = url.origin;
 
+	// Check for dark mode parameter
+	const isDarkMode = url.searchParams.has('dark') || url.searchParams.has('darkmode');
+
 	return {
 		rooms,
 		currentItems,
 		futureItems,
-		baseUrl
+		baseUrl,
+		isDarkMode
 	};
 };

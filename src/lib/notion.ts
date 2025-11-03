@@ -5,8 +5,7 @@ dotenv.config();
 const NOTION_TOKEN = process.env.NOTION_TOKEN!;
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 
-console.log('🚀 ~ NOTION_TOKEN:', NOTION_TOKEN);
-console.log('🚀 ~ NOTION_DATABASE_ID:', NOTION_DATABASE_ID);
+// Notion configuration loaded from environment variables
 
 const notion = new Client({
 	auth: NOTION_TOKEN
@@ -39,11 +38,34 @@ export type NotionBookedItem = {
 // - Meeting-Room:      070b77f9-8355-4166-922b-b3fc050097a6
 
 export async function getNotionItems() {
-	const response = await notion.databases.query({
-		database_id: NOTION_DATABASE_ID
-	});
-	// Gib das komplette response-Objekt oder nur response.results zurück
-	const pageObjectResults = response.results.filter(
+	let allResults: any[] = [];
+	let hasMore = true;
+	let startCursor: string | undefined = undefined;
+
+	// Fetch all pages from Notion API
+	while (hasMore) {
+		const response = await notion.databases.query({
+			database_id: NOTION_DATABASE_ID,
+			sorts: [
+				{
+					property: 'Slot',
+					direction: 'descending'
+				}
+			],
+			page_size: 100,
+			start_cursor: startCursor
+		});
+
+		allResults = allResults.concat(response.results);
+		hasMore = response.has_more;
+		startCursor = response.next_cursor ?? undefined;
+	}
+
+	// Log the total number of results fetched
+	console.log('✓ Fetched', allResults.length, 'booking items from Notion');
+
+	// Filter to PageObjectResponse only
+	const pageObjectResults = allResults.filter(
 		(result): result is PageObjectResponse => result.object === 'page'
 	);
 	pageObjectResults.sort((a, b) => {
@@ -69,7 +91,8 @@ export async function getNotionItems() {
 		}
 		return fromA - fromB;
 	});
-	return mapBookingItems(pageObjectResults);
+	const mappedItems = mapBookingItems(pageObjectResults);
+	return mappedItems;
 }
 
 import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';

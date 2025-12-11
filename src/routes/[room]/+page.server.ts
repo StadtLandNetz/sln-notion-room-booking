@@ -1,33 +1,27 @@
 import {
 	type BookingItem,
-	getNotionItems,
+	getNotionItemsByRoom,
 	getCurrentBookingItems,
-	extractUniqueRoomsFromBooking,
 	getTodayFutureBookingItems,
+	getRoomInfo,
 	type Room
 } from '$lib/notion';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, depends }) => {
+	// Register dependency so invalidate('room:data') will trigger this load function
+	depends('room:data');
+
 	const roomParam: string = params.room;
 
-	const notionItems: BookingItem[] = await getNotionItems();
-	
-	// Filtere Items nach Room-Name ODER Room-UUID
-	const filteredItems = notionItems.filter(item => 
-		item.room.toLowerCase() === roomParam.toLowerCase() ||
-		item.roomUUID === roomParam
-	);
-	
+	// Use filtered query instead of getting all items - much faster!
+	const filteredItems: BookingItem[] = await getNotionItemsByRoom(roomParam);
+
 	const currentItems: BookingItem[] = getCurrentBookingItems(filteredItems);
 	const futureItems: BookingItem[] = getTodayFutureBookingItems(filteredItems);
-	
-	// Extrahiere nur den spezifischen Room (nach Name oder UUID)
-	const allRooms: Room[] = extractUniqueRoomsFromBooking(notionItems);
-	const room: Room | undefined = allRooms.find(r => 
-		r.room.toLowerCase() === roomParam.toLowerCase() ||
-		r.roomUUID === roomParam
-	);
+
+	// Get room info - works even if there are no bookings
+	const room: Room | undefined = getRoomInfo(roomParam);
 
 	return {
 		room,

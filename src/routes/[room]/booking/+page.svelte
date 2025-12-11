@@ -154,9 +154,10 @@
 
 <div class="container">
 	<div class="header">
-		<h1>Book Room: {room?.room || roomParam}</h1>
-		<button class="cancel-btn" onclick={handleCancel}>← Back</button>
+		<button class="cancel-btn" onclick={handleCancel}>← Zurück</button>
 	</div>
+
+	<h1>Book Room: {room?.room || roomParam}</h1>
 
 	{#if !room}
 		<div class="error">
@@ -332,17 +333,17 @@
 
 	.header {
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 30px;
-		border-bottom: 2px solid #eee;
-		padding-bottom: 15px;
+		justify-content: flex-start;
+		padding: 10px 0;
+		margin-bottom: 10px;
 	}
 
 	h1 {
-		margin: 0;
+		margin: 20px 0;
 		font-size: 24px;
 		color: #333;
+		padding-bottom: 15px;
+		border-bottom: 2px solid #eee;
 	}
 
 	h2 {

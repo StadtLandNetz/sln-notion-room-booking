@@ -8,14 +8,14 @@ import {
 } from '$lib/notion';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-// export const load: PageServerLoad = async ({ params }) => {
-	// const lang: string = params.room;
+export const load: PageServerLoad = async ({ depends }) => {
+	// Register dependency so invalidate('home:data') will trigger this load function
+	depends('home:data');
 
 	const notionItems: BookingItem[] = await getNotionItems();
 	const currentItems: BookingItem[] = getCurrentBookingItems(notionItems);
-  const futureItems: BookingItem[] = getTodayFutureBookingItems(notionItems);
-  
+	const futureItems: BookingItem[] = getTodayFutureBookingItems(notionItems);
+
 	const rooms: Room[] = await extractUniqueRoomsFromBooking(notionItems);
 
 	return {

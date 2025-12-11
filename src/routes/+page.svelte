@@ -7,20 +7,28 @@
 
 	export let data: PageData;
 
-	// Daten aus dem load()-Ergebnis
-	const currentItems: BookingItem[] = data.currentItems;
-	const futureItems: BookingItem[] = data.futureItems;
-	const rooms: Room[] = data.rooms.sort((a, b) => a.room.localeCompare(b.room));
+	// Helper function to ensure dates are Date objects (not strings from cache)
+	function ensureDateObjects(items: BookingItem[]): BookingItem[] {
+		return items.map(item => ({
+			...item,
+			from: item.from instanceof Date ? item.from : new Date(item.from),
+			to: item.to instanceof Date ? item.to : new Date(item.to)
+		}));
+	}
 
-	// Map roomUUID -> { current: BookingItem[], future: BookingItem[] }
-	const roomItemMap: Record<string, { current: BookingItem[]; future: BookingItem[] }> = {};
+	// Reactive data - updates automatically when data changes
+	$: currentItems = ensureDateObjects(data.currentItems);
+	$: futureItems = ensureDateObjects(data.futureItems);
+	$: rooms = data.rooms.sort((a, b) => a.room.localeCompare(b.room));
 
-	rooms.forEach((room) => {
-		roomItemMap[room.roomUUID] = {
+	// Reactive map - recalculates when data changes
+	$: roomItemMap = rooms.reduce((map, room) => {
+		map[room.roomUUID] = {
 			current: currentItems.filter((i) => i.roomUUID === room.roomUUID),
 			future: futureItems.filter((i) => i.roomUUID === room.roomUUID)
 		};
-	});
+		return map;
+	}, {} as Record<string, { current: BookingItem[]; future: BookingItem[] }>);
 
 	let now = new Date();
 
@@ -53,6 +61,7 @@
 	}
 
 	let counter = 0;
+	let isRefreshing = false;
 
 	onMount(() => {
 		console.log('reload page');
@@ -68,11 +77,25 @@
 			});
 		}, 1000);
 
-		// refresh page every 10 seconds to reload data
-		const intervalReload = setInterval(async () => {
-			counter++;
-			console.log('🚀 ~ intervalReload ~ counter:', counter);
-			await invalidate('');
+		// Async refresh - doesn't block UI, runs in background
+		const intervalReload = setInterval(() => {
+			if (!isRefreshing) {
+				counter++;
+				console.log('🔄 Background refresh #' + counter);
+				isRefreshing = true;
+
+				// Fire and forget - runs async without blocking
+				// Use dependency identifier instead of '' to only invalidate this page's data
+				invalidate('home:data').then(() => {
+					console.log('✓ Refresh complete #' + counter);
+					isRefreshing = false;
+				}).catch((err) => {
+					console.error('❌ Refresh error:', err);
+					isRefreshing = false;
+				});
+			} else {
+				console.log('⏭️  Skipping refresh - previous refresh still running');
+			}
 		}, 6000);
 
 		// Aufräumen bei Komponentenausblendung

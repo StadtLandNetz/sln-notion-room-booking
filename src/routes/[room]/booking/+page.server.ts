@@ -1,10 +1,10 @@
 import {
 	type BookingItem,
-	getNotionItems,
+	getNotionItemsByRoom,
 	getCurrentBookingItems,
-	extractUniqueRoomsFromBooking,
 	getTodayFutureBookingItems,
 	createBooking,
+	getRoomInfo,
 	type Room
 } from '$lib/notion';
 import type { PageServerLoad, Actions } from './$types';
@@ -13,23 +13,14 @@ import { fail, redirect } from '@sveltejs/kit';
 export const load: PageServerLoad = async ({ params, url }) => {
 	const roomParam: string = params.room;
 
-	const notionItems: BookingItem[] = await getNotionItems();
-	
-	// Filtere Items nach Room-Name ODER Room-UUID
-	const filteredItems = notionItems.filter(item => 
-		item.room.toLowerCase() === roomParam.toLowerCase() ||
-		item.roomUUID === roomParam
-	);
-	
+	// Use filtered query - much faster!
+	const filteredItems: BookingItem[] = await getNotionItemsByRoom(roomParam);
+
 	const currentItems: BookingItem[] = getCurrentBookingItems(filteredItems);
 	const futureItems: BookingItem[] = getTodayFutureBookingItems(filteredItems);
-	
-	// Extrahiere nur den spezifischen Room (nach Name oder UUID)
-	const allRooms: Room[] = extractUniqueRoomsFromBooking(notionItems);
-	const room: Room | undefined = allRooms.find(r => 
-		r.room.toLowerCase() === roomParam.toLowerCase() ||
-		r.roomUUID === roomParam
-	);
+
+	// Get room info - works even if there are no bookings
+	const room: Room | undefined = getRoomInfo(roomParam);
 
 	return {
 		room,
@@ -72,22 +63,15 @@ export const actions: Actions = {
 		}
 
 		const roomParam: string = params.room;
-		
-		// Daten neu laden für aktuelle Verfügbarkeit
-		const notionItems: BookingItem[] = await getNotionItems();
-		const filteredItems = notionItems.filter(item => 
-			item.room.toLowerCase() === roomParam.toLowerCase() ||
-			item.roomUUID === roomParam
-		);
-		
+
+		// Daten neu laden für aktuelle Verfügbarkeit - use filtered query!
+		const filteredItems: BookingItem[] = await getNotionItemsByRoom(roomParam);
+
 		const currentItems: BookingItem[] = getCurrentBookingItems(filteredItems);
 		const futureItems: BookingItem[] = getTodayFutureBookingItems(filteredItems);
-		
-		const allRooms: Room[] = extractUniqueRoomsFromBooking(notionItems);
-		const room: Room | undefined = allRooms.find(r => 
-			r.room.toLowerCase() === roomParam.toLowerCase() ||
-			r.roomUUID === roomParam
-		);
+
+		// Get room info - works even if there are no bookings
+		const room: Room | undefined = getRoomInfo(roomParam);
 
 		if (!room) {
 			return fail(404, { message: 'Room not found' });

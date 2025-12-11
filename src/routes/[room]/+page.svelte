@@ -7,11 +7,20 @@
 
 	export let data: PageData;
 
-	// Daten aus dem load()-Ergebnis
-	const currentItems: BookingItem[] = data.currentItems;
-	const futureItems: BookingItem[] = data.futureItems;
-	const room = data.room;
-	const roomParam = data.roomParam;
+	// Helper function to ensure dates are Date objects (not strings from cache)
+	function ensureDateObjects(items: BookingItem[]): BookingItem[] {
+		return items.map(item => ({
+			...item,
+			from: item.from instanceof Date ? item.from : new Date(item.from),
+			to: item.to instanceof Date ? item.to : new Date(item.to)
+		}));
+	}
+
+	// Reactive data from load() - updates automatically when data changes
+	$: currentItems = ensureDateObjects(data.currentItems);
+	$: futureItems = ensureDateObjects(data.futureItems);
+	$: room = data.room;
+	$: roomParam = data.roomParam;
 
 	let now = new Date();
 
@@ -44,6 +53,7 @@
 	}
 
 	let counter = 0;
+	let isRefreshing = false;
 
 	onMount(() => {
 		console.log('reload page');
@@ -59,11 +69,25 @@
 			});
 		}, 1000);
 
-		// refresh page every 10 seconds to reload data
-		const intervalReload = setInterval(async () => {
-			counter++;
-			console.log('🚀 ~ intervalReload ~ counter:', counter);
-			await invalidate('');
+		// Async refresh - doesn't block UI, runs in background
+		const intervalReload = setInterval(() => {
+			if (!isRefreshing) {
+				counter++;
+				console.log('🔄 Background refresh #' + counter);
+				isRefreshing = true;
+
+				// Fire and forget - runs async without blocking
+				// Use dependency identifier instead of '' to only invalidate this page's data
+				invalidate('room:data').then(() => {
+					console.log('✓ Refresh complete #' + counter);
+					isRefreshing = false;
+				}).catch((err) => {
+					console.error('❌ Refresh error:', err);
+					isRefreshing = false;
+				});
+			} else {
+				console.log('⏭️  Skipping refresh - previous refresh still running');
+			}
 		}, 6000);
 
 		// Aufräumen bei Komponentenausblendung
@@ -75,6 +99,10 @@
 </script>
 
 <div class="container">
+	<div class="header">
+		<a href="/" class="back-link" data-sveltekit-reload>← Zurück zur Übersicht</a>
+	</div>
+
 	<img class="logo" src="/logo.png" alt="" />
 	<h1>SLN Office - {room?.room || roomParam}</h1>
 	<p>{timeString} Uhr</p>
@@ -191,11 +219,15 @@
 				</tr>
 			</tfoot>
 		</table>
-		<!-- Booking Button -->
-		<div class="booking-button-section">
-			<a href="/{roomParam}/booking" class="booking-btn"> 📅 Book Room </a>
+		<!-- Action Buttons -->
+		<div class="action-buttons-section">
+			<a href="/{roomParam}/booking" class="action-btn booking-btn" data-sveltekit-reload>
+				📅 Book Room
+			</a>
+			<a href="/{roomParam}/trmnl" class="action-btn trmnl-btn" data-sveltekit-reload>
+				📺 TRMNL View
+			</a>
 		</div>
-		<a href="/">← Zurück zur Übersicht</a>
 	{/if}
 </div>
 
@@ -214,16 +246,16 @@
 		color: #dc3545;
 	}
 
-	.booking-button-section {
-		text-align: center;
+	.action-buttons-section {
+		display: flex;
+		gap: 12px;
+		justify-content: center;
 		margin: 20px 0;
 	}
 
-	.booking-btn {
+	.action-btn {
 		display: inline-block;
 		padding: 10px 20px;
-		background: #f8f9fa;
-		color: #6c757d;
 		text-decoration: none;
 		border-radius: 6px;
 		font-size: 14px;
@@ -231,6 +263,14 @@
 		transition: all 0.2s ease;
 		border: 1px solid #dee2e6;
 		cursor: pointer;
+		flex: 1;
+		text-align: center;
+		max-width: 200px;
+	}
+
+	.booking-btn {
+		background: #f8f9fa;
+		color: #6c757d;
 	}
 
 	.booking-btn:hover {
@@ -238,6 +278,43 @@
 		color: #495057;
 		border-color: #ced4da;
 	}
+
+	.trmnl-btn {
+		background: #e7f3ff;
+		color: #0066cc;
+		border-color: #b3d9ff;
+	}
+
+	.trmnl-btn:hover {
+		background: #cce5ff;
+		color: #004c99;
+		border-color: #99ccff;
+	}
+
+	.header {
+		display: flex;
+		justify-content: flex-start;
+		padding: 10px 0;
+		margin-bottom: 10px;
+	}
+
+	.back-link {
+		display: inline-block;
+		padding: 8px 16px;
+		background: #f5f5f5;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		color: #666;
+		text-decoration: none;
+		font-size: 14px;
+		transition: all 0.2s ease;
+		cursor: pointer;
+	}
+
+	.back-link:hover {
+		background: #e9e9e9;
+	}
+
 	table {
 		width: 100%;
 		border-collapse: collapse;
@@ -347,6 +424,14 @@
 		.item-user {
 			text-align: center;
 			font-size: 20px;
+		}
+
+		.action-buttons-section {
+			flex-direction: column;
+		}
+
+		.action-btn {
+			max-width: 100%;
 		}
 	}
 </style>

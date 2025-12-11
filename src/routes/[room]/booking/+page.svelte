@@ -11,7 +11,7 @@
 
 	// Helper function to ensure dates are Date objects (not strings from cache)
 	function ensureDateObjects(items: BookingItem[]): BookingItem[] {
-		return items.map(item => ({
+		return items.map((item) => ({
 			...item,
 			from: item.from instanceof Date ? item.from : new Date(item.from),
 			to: item.to instanceof Date ? item.to : new Date(item.to)
@@ -193,7 +193,7 @@
 
 <div class="container">
 	<div class="header">
-		<button class="cancel-btn" onclick={handleCancel}>← Zurück</button>
+		<button class="cancel-btn" onclick={handleCancel}>← Back</button>
 	</div>
 
 	<h1>Book Room: {room?.room || roomParam}</h1>

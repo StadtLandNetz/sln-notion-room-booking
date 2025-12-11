@@ -100,7 +100,7 @@
 
 <div class="container">
 	<div class="header">
-		<a href="/" class="back-link" data-sveltekit-reload>← Zurück zur Übersicht</a>
+		<a href="/" class="back-link" data-sveltekit-reload>← Back to overview</a>
 	</div>
 
 	<img class="logo" src="/logo.png" alt="" />

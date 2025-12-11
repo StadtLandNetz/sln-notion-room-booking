@@ -9,8 +9,17 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const currentItems: BookingItem[] = data.currentItems;
-	const futureItems: BookingItem[] = data.futureItems;
+	// Helper function to ensure dates are Date objects (not strings from cache)
+	function ensureDateObjects(items: BookingItem[]): BookingItem[] {
+		return items.map(item => ({
+			...item,
+			from: item.from instanceof Date ? item.from : new Date(item.from),
+			to: item.to instanceof Date ? item.to : new Date(item.to)
+		}));
+	}
+
+	const currentItems: BookingItem[] = ensureDateObjects(data.currentItems);
+	const futureItems: BookingItem[] = ensureDateObjects(data.futureItems);
 	const room = data.room;
 	const roomParam = data.roomParam;
 
@@ -56,13 +65,43 @@
 		const startTime = currentMeetingEnd; // Direkt nach aktuellem Meeting
 		const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
-		// Prüfe gegen zukünftige Meetings
-		for (const item of futureItems) {
-			if (startTime < item.to && endTime > item.from) {
+		console.log('🔍 Checking availability after current meeting:', {
+			duration: durationMinutes,
+			proposedSlot: `${formatTime(startTime)} - ${formatTime(endTime)}`,
+			currentItemsCount: currentItems.length,
+			futureItemsCount: futureItems.length
+		});
+
+		// WICHTIG: Prüfe gegen ALLE Meetings (nicht nur futureItems)
+		// futureItems enthält nur Meetings die > 15 Minuten in der Zukunft sind
+		// Wir müssen auch gegen andere aktuelle Meetings prüfen (außer dem ersten)
+		const allRelevantItems = [...currentItems.slice(1), ...futureItems];
+
+		console.log('  🔍 Checking against', allRelevantItems.length, 'items');
+
+		// Prüfe gegen alle relevanten Meetings
+		// Überschneidung liegt vor wenn: startTime < item.to UND endTime > item.from
+		// Das bedeutet: Das neue Meeting endet nach Beginn des existierenden UND beginnt vor Ende des existierenden
+		for (const item of allRelevantItems) {
+			const itemStart = item.from.getTime();
+			const itemEnd = item.to.getTime();
+			const newStart = startTime.getTime();
+			const newEnd = endTime.getTime();
+
+			console.log('  📅 Checking against item:', {
+				existingMeeting: `${formatTime(item.from)} - ${formatTime(item.to)}`,
+				willOverlap: newStart < itemEnd && newEnd > itemStart
+			});
+
+			// Überschneidung wenn das neue Meeting VOR Ende des existierenden endet
+			// UND NACH Beginn des existierenden beginnt
+			if (newStart < itemEnd && newEnd > itemStart) {
+				console.log('❌ Überschneidung gefunden!');
 				return false; // Überschneidung
 			}
 		}
 
+		console.log('✅ Slot verfügbar');
 		return true;
 	}
 
